@@ -12,7 +12,11 @@ from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parent.parent
+# The mark (stepped layers, transparent background) is used inside the app and
+# on the web. The app icon puts that mark on a rounded tile sized to the macOS
+# icon grid (824px tile on a 1024px canvas) and feeds the OS icon files.
 SOURCE_SVG = ROOT / "resources" / "layertrail.svg"
+ICON_SVG = ROOT / "resources" / "icon.svg"
 RESOURCES_DIR = ROOT / "resources"
 RENDERER_PUBLIC_DIR = ROOT / "src" / "renderer" / "public"
 
@@ -22,15 +26,16 @@ def run(cmd: list[str]) -> None:
 
 
 def ensure_source() -> None:
-    if not SOURCE_SVG.exists():
-        raise FileNotFoundError(f"Missing source SVG: {SOURCE_SVG}")
+    for source in (SOURCE_SVG, ICON_SVG):
+        if not source.exists():
+            raise FileNotFoundError(f"Missing source SVG: {source}")
 
 
-def render_base_png(target: Path) -> None:
+def render_png(source: Path, target: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="layertrail-brand-") as tmpdir:
         tmp_path = Path(tmpdir)
-        run(["qlmanage", "-t", "-s", "1024", "-o", str(tmp_path), str(SOURCE_SVG)])
-        thumbnail = tmp_path / f"{SOURCE_SVG.name}.png"
+        run(["qlmanage", "-t", "-s", "1024", "-o", str(tmp_path), str(source)])
+        thumbnail = tmp_path / f"{source.name}.png"
         if not thumbnail.exists():
             raise FileNotFoundError(f"Quick Look did not create thumbnail: {thumbnail}")
         shutil.copy2(thumbnail, target)
@@ -66,11 +71,11 @@ def generate_ico(base_png: Path, target: Path) -> None:
     image.save(target, format="ICO", sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
 
 
-def generate_web_assets(base_png: Path) -> None:
+def generate_web_assets(mark_png: Path) -> None:
     RENDERER_PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
     shutil.copy2(SOURCE_SVG, RENDERER_PUBLIC_DIR / "layertrail-mark.svg")
 
-    image = Image.open(base_png)
+    image = Image.open(mark_png)
     image.resize((512, 512), Image.Resampling.LANCZOS).save(RENDERER_PUBLIC_DIR / "layertrail-mark.png")
     image.resize((256, 256), Image.Resampling.LANCZOS).save(RENDERER_PUBLIC_DIR / "favicon.png")
 
@@ -83,12 +88,15 @@ def main() -> int:
     icns_path = RESOURCES_DIR / "icon.icns"
     ico_path = RESOURCES_DIR / "icon.ico"
 
-    render_base_png(base_png)
+    render_png(ICON_SVG, base_png)
     generate_icns(base_png, icns_path)
     generate_ico(base_png, ico_path)
-    generate_web_assets(base_png)
+    with tempfile.TemporaryDirectory(prefix="layertrail-mark-") as tmpdir:
+        mark_png = Path(tmpdir) / "mark.png"
+        render_png(SOURCE_SVG, mark_png)
+        generate_web_assets(mark_png)
 
-    print("Generated branding assets from resources/layertrail.svg")
+    print("Generated branding assets from resources/icon.svg and resources/layertrail.svg")
     print(f"- {base_png.relative_to(ROOT)}")
     print(f"- {icns_path.relative_to(ROOT)}")
     print(f"- {ico_path.relative_to(ROOT)}")
