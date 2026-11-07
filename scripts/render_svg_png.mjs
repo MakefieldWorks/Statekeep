@@ -15,9 +15,22 @@ if (!input || !output || !Number.isInteger(size) || size <= 0) {
 }
 
 const svg = readFileSync(input, 'utf8')
-const browser = await chromium.launch(
-  process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}
-)
+let browser
+try {
+  browser = await chromium.launch(
+    process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}
+  )
+} catch (error) {
+  // The E2E tests drive Electron, so a normal `bun install` doesn't download
+  // Playwright's Chromium. Say how to get it instead of printing a stack trace.
+  console.error(
+    'Could not start Chromium to render the icon.\n' +
+      'Install the browser Playwright expects with `bunx playwright install chromium`,\n' +
+      'or set CHROMIUM_PATH to an existing Chromium or Chrome executable.\n\n' +
+      (error instanceof Error ? error.message.split('\n')[0] : String(error))
+  )
+  process.exit(1)
+}
 try {
   const page = await browser.newPage({ viewport: { width: size, height: size }, deviceScaleFactor: 1 })
   await page.setContent(

@@ -22,7 +22,11 @@ RENDERER_PUBLIC_DIR = ROOT / "src" / "renderer" / "public"
 
 
 def run(cmd: list[str]) -> None:
-    subprocess.run(cmd, check=True, text=True, capture_output=True)
+    result = subprocess.run(cmd, text=True, capture_output=True)
+    if result.returncode != 0:
+        # Show the tool's own message (for example a missing Chromium) rather
+        # than only its exit status.
+        raise RuntimeError(f"{' '.join(cmd)} failed:\n{(result.stderr or result.stdout).strip()}")
 
 
 def ensure_source() -> None:
