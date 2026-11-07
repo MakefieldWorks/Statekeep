@@ -32,38 +32,18 @@ def ensure_source() -> None:
 
 
 def render_png(source: Path, target: Path) -> None:
-    with tempfile.TemporaryDirectory(prefix="layertrail-brand-") as tmpdir:
-        tmp_path = Path(tmpdir)
-        run(["qlmanage", "-t", "-s", "1024", "-o", str(tmp_path), str(source)])
-        thumbnail = tmp_path / f"{source.name}.png"
-        if not thumbnail.exists():
-            raise FileNotFoundError(f"Quick Look did not create thumbnail: {thumbnail}")
-        shutil.copy2(thumbnail, target)
+    run(["node", str(ROOT / "scripts" / "render_svg_png.mjs"), str(source), str(target), "1024"])
+    image = Image.open(target).convert("RGBA")
+    # Both sources have transparent corners. An opaque corner means the
+    # renderer flattened the image onto a background.
+    if image.getpixel((0, 0))[3] != 0:
+        raise RuntimeError(f"Rendered {target.name} has an opaque corner; transparency was lost")
+    image.save(target)
 
 
 def generate_icns(base_png: Path, target: Path) -> None:
-    with tempfile.TemporaryDirectory(prefix="layertrail-iconset-") as tmpdir:
-        iconset_dir = Path(tmpdir) / "layertrail.iconset"
-        iconset_dir.mkdir()
-
-        sizes = {
-            "icon_16x16.png": 16,
-            "icon_16x16@2x.png": 32,
-            "icon_32x32.png": 32,
-            "icon_32x32@2x.png": 64,
-            "icon_128x128.png": 128,
-            "icon_128x128@2x.png": 256,
-            "icon_256x256.png": 256,
-            "icon_256x256@2x.png": 512,
-            "icon_512x512.png": 512,
-            "icon_512x512@2x.png": 1024,
-        }
-
-        for filename, size in sizes.items():
-            output = iconset_dir / filename
-            run(["sips", "-z", str(size), str(size), str(base_png), "--out", str(output)])
-
-        run(["iconutil", "-c", "icns", str(iconset_dir), "-o", str(target)])
+    # Pillow writes every standard size (16 to 512@2x) from the 1024px image.
+    Image.open(base_png).convert("RGBA").save(target, format="ICNS")
 
 
 def generate_ico(base_png: Path, target: Path) -> None:
