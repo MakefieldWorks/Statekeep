@@ -41,8 +41,8 @@ export class HistoryBackupStore {
   readonly backupPath: string
 
   constructor(projectPath: string, private readonly projectId: string) {
-    this.historyPath = join(projectPath, '.layertrail', 'history.json')
-    this.backupPath = join(projectPath, '.layertrail', 'history.backup.json')
+    this.historyPath = join(projectPath, '.statekeep', 'history.json')
+    this.backupPath = join(projectPath, '.statekeep', 'history.backup.json')
   }
 
   save(history: SnapshotHistoryState): void {
@@ -65,7 +65,7 @@ export class HistoryBackupStore {
       }
     } catch (error) {
       if (error instanceof SnapshotHistoryVersionError) {
-        throw new Error('Use a Layertrail version that supports this history format. Restoring an older backup could discard newer history.')
+        throw new Error('Use a Statekeep version that supports this history format. Restoring an older backup could discard newer history.')
       }
     }
     if (readable) throw new Error('History metadata is readable. Backup restoration is only available for damaged metadata.')

@@ -8,11 +8,11 @@ playwright-report/
 .playwright-artifacts/
 
 # Generated project fixtures (created by scripts/generate-project.mjs)
-layertrail-large-fixture/
+statekeep-large-fixture/
 tmp/
 
 # SQLite search index (auto-created per project, not source-controlled)
-**/.layertrail/
+**/.statekeep/
 .gstack/
 
 .claude/*

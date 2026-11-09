@@ -451,7 +451,7 @@ export function formatDiffReportHtml(
 </head>
 <body><main>
   <header>
-    <p class="eyebrow">Layertrail change review</p>
+    <p class="eyebrow">Statekeep change review</p>
     <h1>${html(ctx.projectName)}</h1>
     <p class="subtitle">A portable review of observed project changes.</p>
     <div class="meta-grid">

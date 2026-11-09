@@ -4,7 +4,7 @@ Snapshot creation, snapshot revert, recovery-point application, recovery-file
 registration/removal, and history-backup restoration now preserve the current
 inventory (including unsaved edits) and earlier history metadata before changing
 the project. Metadata-only operations preserve the history file's exact bytes,
-including damage or absence. A versioned `.layertrail/history-operation.json`
+including damage or absence. A versioned `.statekeep/history-operation.json`
 record is published after those copies have been flushed to disk. The record
 identifies the operation and fingerprints both copies. Snapshot, revert, and
 recovery records also include the operation kind, intended timeline-event ID
@@ -17,7 +17,7 @@ The record remains until the operation reports success or safely rolls back.
 An uncertain failure,
 process termination, or interruption after the history commit but before cleanup
 therefore leaves evidence for the next session. A cleanup failure after a
-successful commit still reports the operation as successful. Layertrail immediately
+successful commit still reports the operation as successful. Statekeep immediately
 retries exact classification after a cleanup failure and checks again on the next
 open. It automatically recognizes snapshot/revert/recovery completion only when
 the record, document, last timeline event, lineage pointers, and immutable Git
@@ -27,7 +27,7 @@ Recovery registration also checks that its source payload is unchanged.
 Backup restoration also requires the preserved damaged original (when present)
 and source backup to match. It then retains the before-state evidence and
 resumes without a banner. Missing or conflicting proof remains in manual review.
-Layertrail never replays Git commands. Editing, Undo/Redo,
+Statekeep never replays Git commands. Editing, Undo/Redo,
 saving, final save on close, new history mutations, and archive export pause
 until the user reviews the unfinished operation. Read-only inspection remains
 available. Derived history-index backfill is not started while evidence is pending.
@@ -45,7 +45,7 @@ automatic repair of lost metadata. It preserves another copy of the current
 inventory and current history, saves the current inventory, clears Undo/Redo,
 and clears its assumed snapshot baseline and pending-revert association. Existing
 Git commits/tags and history events remain unchanged. A snapshot created before
-an interruption may exist without its original note or timeline event; Layertrail
+an interruption may exist without its original note or timeline event; Statekeep
 does not invent those. The pending record is moved to the recovery directory,
 retaining all evidence. The earlier inventory can subsequently be reviewed and
 added through **Additional recovery files**, then applied through normal recovery.
@@ -70,7 +70,7 @@ or unsupported evidence requires manual recovery and is never silently discarded
 
 Normal successful operations remove their temporary before-state copies. Copies
 retained after an interrupted operation are deliberate recovery/audit evidence:
-Layertrail does not expire or cap them because automatic deletion could remove the
+Statekeep does not expire or cap them because automatic deletion could remove the
 only surviving pre-operation inventory. They use the existing recovery directory
 and are included in portable archives once the unfinished operation has been
 acknowledged. The user-reviewed cleanup workflow below provides explicit
@@ -88,7 +88,7 @@ deletion waits until readable history is restored so recovery registrations can 
 
 Deletion is available for one group at a time after an explicit permanent-action
 confirmation. Its token covers the exact operation record, its evidence files,
-and current history metadata. Layertrail revalidates all of them immediately before
+and current history metadata. Statekeep revalidates all of them immediately before
 deleting. If the before-state inventory is registered under Additional recovery
 files, deletion remains blocked until that registration is explicitly removed.
 An active pending operation also blocks the workflow.
@@ -96,7 +96,7 @@ An active pending operation also blocks the workflow.
 The archived operation record is removed first so an interrupted cleanup can
 never present a partial group as intact. Its linked payloads are then removed.
 If a payload cannot be deleted, it remains ordinary recovery material and
-Layertrail reports its exact filename. Unrelated and unrecognized files are never
+Statekeep reports its exact filename. Unrelated and unrecognized files are never
 deleted. Exporting a portable archive before cleanup is the safer choice when the
 evidence may still be useful.
 

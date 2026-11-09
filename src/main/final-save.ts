@@ -50,13 +50,13 @@ export function finalSaveFailureDialogOptions(
   const contextText = {
     'project-close': 'closing the project',
     'window-close': 'closing the window',
-    quit: 'quitting Layertrail',
+    quit: 'quitting Statekeep',
   }[context]
 
   return {
     type: 'error',
     title: 'Could Not Save Project',
-    message: `Layertrail could not save the current project before ${contextText}.`,
+    message: `Statekeep could not save the current project before ${contextText}.`,
     detail: `${message}\n\nRetry the save, open the logs to inspect the failure, or continue anyway and risk losing unsaved changes.`,
     buttons: ['Retry', proceedLabel, 'Open Logs'],
     defaultId: 0,

@@ -97,7 +97,7 @@ export class GitService {
   async restoreArchiveBundle(projectDir: string, bundle: string): Promise<void> {
     await this.queue.enqueue(async () => {
       // Start with fresh local configuration and no templates/hooks. Never
-      // checkout a bundled tree: it may contain paths unrelated to Layertrail.
+      // checkout a bundled tree: it may contain paths unrelated to Statekeep.
       await archiveGit(projectDir, ['init', '--template='])
       await archiveGit(projectDir, ['symbolic-ref', 'HEAD', 'refs/heads/main'])
       await archiveGit(projectDir, ['bundle', 'verify', bundle])
@@ -153,7 +153,7 @@ export class GitService {
       await execFileAsync('git', ['add', PROJECT_DOCUMENT_FILE], { cwd: projectDir })
       await execFileAsync(
         'git',
-        ['-c', 'user.email=layertrail@local', '-c', 'user.name=Layertrail', 'commit', '-m', 'Initial project'],
+        ['-c', 'user.email=statekeep@local', '-c', 'user.name=Statekeep', 'commit', '-m', 'Initial project'],
         { cwd: projectDir }
       )
       this.logger.info('initial git commit', { dir: projectDir })
@@ -167,12 +167,12 @@ export class GitService {
         const { stdout } = await execFileAsync('git', ['show', `:${PROJECT_DOCUMENT_FILE}`], { cwd: projectDir, maxBuffer: MAX_GIT_BUFFER, encoding: 'buffer' })
         if (createHash('sha256').update(stdout).digest('hex') !== expectedDocumentHash) {
           await execFileAsync('git', ['reset', '-q', '--', PROJECT_DOCUMENT_FILE], { cwd: projectDir })
-          throw new SnapshotDocumentChangedError('The staged project differs from the inventory Layertrail saved. Review the external change before snapshotting.')
+          throw new SnapshotDocumentChangedError('The staged project differs from the inventory Statekeep saved. Review the external change before snapshotting.')
         }
       }
       await execFileAsync(
         'git',
-        ['-c', 'user.email=layertrail@local', '-c', 'user.name=Layertrail', 'commit', '--allow-empty', '-m', name],
+        ['-c', 'user.email=statekeep@local', '-c', 'user.name=Statekeep', 'commit', '--allow-empty', '-m', name],
         { cwd: projectDir }
       )
       await execFileAsync('git', ['tag', `${SNAPSHOT_TAG_PREFIX}${name}`], { cwd: projectDir })

@@ -50,7 +50,7 @@ jobs:
       # stays visible under xvfb's private display regardless of that default.
       - name: Electron E2E tests
         env:
-          LAYERTRAIL_E2E_VISIBLE: "1"
+          STATEKEEP_E2E_VISIBLE: "1"
         run: xvfb-run --auto-servernum bun run test:e2e
 
       # Packaged-app coverage on every PR: build the unpacked Linux package,
@@ -73,7 +73,7 @@ jobs:
         run: bun run generate:project -- --output ./tmp/pilot-dogfood --name "Pilot Lab Inventory" --nodes 750 --depth 6 --branching 4 --snapshots 4 --seed 20260424
       - name: Packaged dogfood
         env:
-          LAYERTRAIL_E2E_VISIBLE: "1"
+          STATEKEEP_E2E_VISIBLE: "1"
         run: xvfb-run --auto-servernum bun run test:dogfood -- --project ./tmp/pilot-dogfood --packaged
 
       - name: Upload Playwright diagnostics

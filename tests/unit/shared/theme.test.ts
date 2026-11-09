@@ -15,18 +15,18 @@ import {
 describe('theme definitions', () => {
   it('ships complete, validated light and dark token sets', () => {
     expect(BUILT_IN_THEMES.map(theme => theme.id)).toEqual([
-      'layertrail-light',
-      'layertrail-graphite-light',
-      'layertrail-dark',
-      'layertrail-graphite-dark',
+      'statekeep-light',
+      'statekeep-graphite-light',
+      'statekeep-dark',
+      'statekeep-graphite-dark',
     ])
     expect(themesForScheme('light').map(theme => theme.id)).toEqual([
-      'layertrail-light',
-      'layertrail-graphite-light',
+      'statekeep-light',
+      'statekeep-graphite-light',
     ])
     expect(themesForScheme('dark').map(theme => theme.id)).toEqual([
-      'layertrail-dark',
-      'layertrail-graphite-dark',
+      'statekeep-dark',
+      'statekeep-graphite-dark',
     ])
 
     for (const theme of BUILT_IN_THEMES) {
@@ -36,25 +36,25 @@ describe('theme definitions', () => {
   })
 
   it('resolves independently selected light and dark theme IDs', () => {
-    expect(resolveTheme(DEFAULT_APPEARANCE_PREFERENCE, 'light').id).toBe('layertrail-light')
-    expect(resolveTheme(DEFAULT_APPEARANCE_PREFERENCE, 'dark').id).toBe('layertrail-dark')
+    expect(resolveTheme(DEFAULT_APPEARANCE_PREFERENCE, 'light').id).toBe('statekeep-light')
+    expect(resolveTheme(DEFAULT_APPEARANCE_PREFERENCE, 'dark').id).toBe('statekeep-dark')
     expect(resolveTheme({
       ...DEFAULT_APPEARANCE_PREFERENCE,
       mode: 'light',
-    }, 'dark').id).toBe('layertrail-light')
+    }, 'dark').id).toBe('statekeep-light')
     expect(resolveTheme({
       ...DEFAULT_APPEARANCE_PREFERENCE,
       mode: 'dark',
-    }, 'light').id).toBe('layertrail-dark')
+    }, 'light').id).toBe('statekeep-dark')
     const graphitePreference = {
       ...DEFAULT_APPEARANCE_PREFERENCE,
-      lightThemeId: 'layertrail-graphite-light',
-      darkThemeId: 'layertrail-graphite-dark',
+      lightThemeId: 'statekeep-graphite-light',
+      darkThemeId: 'statekeep-graphite-dark',
     }
-    expect(resolveTheme(graphitePreference, 'light').id).toBe('layertrail-graphite-light')
-    expect(resolveTheme(graphitePreference, 'dark').id).toBe('layertrail-graphite-dark')
-    expect(resolveTheme({ ...graphitePreference, mode: 'light' }, 'dark').id).toBe('layertrail-graphite-light')
-    expect(resolveTheme({ ...graphitePreference, mode: 'dark' }, 'light').id).toBe('layertrail-graphite-dark')
+    expect(resolveTheme(graphitePreference, 'light').id).toBe('statekeep-graphite-light')
+    expect(resolveTheme(graphitePreference, 'dark').id).toBe('statekeep-graphite-dark')
+    expect(resolveTheme({ ...graphitePreference, mode: 'light' }, 'dark').id).toBe('statekeep-graphite-light')
+    expect(resolveTheme({ ...graphitePreference, mode: 'dark' }, 'light').id).toBe('statekeep-graphite-dark')
     expect(resolveTheme(graphitePreference, 'light').tokens['surface-canvas'])
       .not.toBe(resolveTheme(DEFAULT_APPEARANCE_PREFERENCE, 'light').tokens['surface-canvas'])
   })
@@ -66,22 +66,22 @@ describe('theme definitions', () => {
       darkThemeId: 'unknown',
     })).toEqual({
       mode: 'dark',
-      lightThemeId: 'layertrail-light',
-      darkThemeId: 'layertrail-dark',
+      lightThemeId: 'statekeep-light',
+      darkThemeId: 'statekeep-dark',
     })
     expect(normalizeAppearancePreference({
       mode: 'system',
-      lightThemeId: 'layertrail-graphite-light',
-      darkThemeId: 'layertrail-graphite-dark',
+      lightThemeId: 'statekeep-graphite-light',
+      darkThemeId: 'statekeep-graphite-dark',
     })).toEqual({
       mode: 'system',
-      lightThemeId: 'layertrail-graphite-light',
-      darkThemeId: 'layertrail-graphite-dark',
+      lightThemeId: 'statekeep-graphite-light',
+      darkThemeId: 'statekeep-graphite-dark',
     })
     expect(normalizeAppearancePreference({
       mode: 'system',
-      lightThemeId: 'layertrail-graphite-dark',
-      darkThemeId: 'layertrail-graphite-light',
+      lightThemeId: 'statekeep-graphite-dark',
+      darkThemeId: 'statekeep-graphite-light',
     })).toEqual(DEFAULT_APPEARANCE_PREFERENCE)
   })
 

@@ -21,7 +21,7 @@
 
     <div class="flex items-center gap-3">
       <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white ring-1 ring-stone-200">
-        <img src={brandMark} alt="Layertrail logo" class="h-7 w-7" />
+        <img src={brandMark} alt="Statekeep logo" class="h-7 w-7" />
       </div>
       <div>
         <h2 class="text-lg font-semibold text-stone-800">New Project</h2>

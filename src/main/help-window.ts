@@ -72,7 +72,7 @@ export function openHelpWindow(options: {
     minWidth: 480,
     minHeight: 400,
     show: false,
-    title: 'Layertrail Help',
+    title: 'Statekeep Help',
     icon: options.icon,
     backgroundColor: options.backgroundColor,
     webPreferences: {

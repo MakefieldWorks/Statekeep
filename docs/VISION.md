@@ -1,8 +1,8 @@
-# Layertrail Vision
+# Statekeep Vision
 
 ## One-line vision
 
-**Layertrail is a calm, modern desktop workspace for structured projects, with first-class hierarchy, history, and meaningful change awareness.**
+**Statekeep is a calm, modern desktop workspace for structured projects, with first-class hierarchy, history, and meaningful change awareness.**
 
 It should carry forward the best conceptual ideas from Archon — identity, snapshots, semantic change, and local-first reliability — while feeling like a **clean, intentional new product** rather than “Archon rewritten in another stack.”
 
@@ -10,7 +10,7 @@ It should carry forward the best conceptual ideas from Archon — identity, snap
 
 ## Positioning
 
-Layertrail is **not** intended to be a line-for-line port of Archon.
+Statekeep is **not** intended to be a line-for-line port of Archon.
 
 It is a greenfield product that should:
 
@@ -42,7 +42,7 @@ Plugins and integrations matter, but only after the core experience is excellent
 
 ## Likely target users
 
-Layertrail should initially optimize for people who need to manage **structured, evolving information**:
+Statekeep should initially optimize for people who need to manage **structured, evolving information**:
 
 - product and research leads
 - technical planners and architects
@@ -53,7 +53,7 @@ Layertrail should initially optimize for people who need to manage **structured,
 
 ## Non-goals for v1
 
-Layertrail v1 should **not** try to be all of the following at once:
+Statekeep v1 should **not** try to be all of the following at once:
 
 - a full clone of Archon
 - a full real-time collaboration platform
@@ -74,13 +74,13 @@ A user can:
 5. review meaningful changes over time,
 6. trust that their work is recoverable and durable.
 
-If Layertrail gets those basics right with a polished desktop UX, it will already feel distinct and valuable.
+If Statekeep gets those basics right with a polished desktop UX, it will already feel distinct and valuable.
 
 ---
 
 ## v1 success criteria
 
-Layertrail v1 is successful if it delivers:
+Statekeep v1 is successful if it delivers:
 
 - a polished hierarchy editor
 - stable project storage and recovery
@@ -93,4 +93,4 @@ Layertrail v1 is successful if it delivers:
 
 ## Product statement to keep in mind
 
-> **Layertrail should inherit Archon’s strongest ideas, not its obligations.**
+> **Statekeep should inherit Archon’s strongest ideas, not its obligations.**

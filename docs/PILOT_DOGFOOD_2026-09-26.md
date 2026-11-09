@@ -8,7 +8,7 @@ distribution test.
 
 - Host: Apple Silicon Mac, Darwin 27.0.0.
 - Commit: `383faac` (`main` at the start of this pass).
-- Package: `dist/mac-arm64/Layertrail.app`, built with `package:verify` and
+- Package: `dist/mac-arm64/Statekeep.app`, built with `package:verify` and
   ad-hoc signed locally. It is not Developer ID signed or notarized.
 - Fixture: `generate:project` with seed `20260424`, requested 750 nodes,
   depth 6, branching 4, and four snapshots. The generated project contained
@@ -31,7 +31,7 @@ were new, so `--force` was unnecessary.
 | --- | --- |
 | `bun run typecheck` | Passed; no Svelte errors or warnings |
 | `bun run test` | 898 passed |
-| `bun run package:verify` | Passed; macOS bundle, branding, ad-hoc signature, and `codesign --verify --deep --strict --verbose=2 dist/mac-arm64/Layertrail.app` |
+| `bun run package:verify` | Passed; macOS bundle, branding, ad-hoc signature, and `codesign --verify --deep --strict --verbose=2 dist/mac-arm64/Statekeep.app` |
 | `bun run test:e2e` | 85 passed, 1 expected dogfood skip |
 | `bun run test:dogfood -- --project ./tmp/pilot-dogfood-2026-09-26` | Passed |
 
@@ -39,8 +39,8 @@ From the repository root, I launched the packaged `.app` through the macOS shell
 with an isolated user-data directory and a separate disposable fixture copy:
 
 ```sh
-open -n -a ./dist/mac-arm64/Layertrail.app --args \
-  --user-data-dir=/private/tmp/layertrail-packaged-dogfood-2026-09-26 \
+open -n -a ./dist/mac-arm64/Statekeep.app --args \
+  --user-data-dir=/private/tmp/statekeep-packaged-dogfood-2026-09-26 \
   "$PWD/tmp/pilot-dogfood-packaged-2026-09-26"
 ```
 
@@ -61,20 +61,20 @@ I also launched the packaged app with fresh user data and an isolated example
 directory using:
 
 ```sh
-LAYERTRAIL_EXAMPLE_PROJECTS_DIR=/private/tmp/layertrail-packaged-examples-2026-09-26 \
-  open -n -a ./dist/mac-arm64/Layertrail.app --args \
-  --user-data-dir=/private/tmp/layertrail-packaged-first-run-2026-09-26
+STATEKEEP_EXAMPLE_PROJECTS_DIR=/private/tmp/statekeep-packaged-examples-2026-09-26 \
+  open -n -a ./dist/mac-arm64/Statekeep.app --args \
+  --user-data-dir=/private/tmp/statekeep-packaged-first-run-2026-09-26
 ```
 
 The empty hub offered **Open Example Project**; using it created
-`Layertrail Sample Lab` with six nodes and two snapshots. Comparing `baseline-lab`
+`Statekeep Sample Lab` with six nodes and two snapshots. Comparing `baseline-lab`
 to `firmware-update` showed the firmware/status change and the added telemetry
 gateway. The native **Open Project** file picker opened the generated 754-node
 project. Native **Open Recent** listed both projects and reopened the example.
-Finder identified `Layertrail.layertrail` as a **Layertrail Project** with
-Layertrail as the default app. Opening the document from Finder cold-launched the
+Finder identified `Statekeep.statekeep` as a **Statekeep Project** with
+Statekeep as the default app. Opening the document from Finder cold-launched the
 packaged app into the 755-node edited copy. Opening another selected project
-document from Finder while Layertrail was running switched it to the 754-node
+document from Finder while Statekeep was running switched it to the 754-node
 copy. Both cold and running-app document routes were observed.
 
 ## Observed friction
@@ -120,7 +120,7 @@ on the same Apple Silicon Mac:
 The first dogfood launch inside the restricted execution sandbox failed with
 `electron.launch: Process failed to launch!` and `signal=SIGABRT`. The macOS
 crash report's main-thread stack included `___RegisterApplication_block_invoke`
-and `_RegisterApplication`, before Layertrail code ran. Giving the E2E process an
+and `_RegisterApplication`, before Statekeep code ran. Giving the E2E process an
 isolated user-data directory did not change that result. The trial change was
 reverted; the committed dogfood test is unmodified. It passed with host-level
 launch permission, and a regular hidden-window E2E test passed inside the
@@ -132,7 +132,7 @@ Windows, real import-data, and signed-distribution checks above remain open.
 
 ## Automated platform and durability follow-up — 2026-09-27
 
-The opt-in [clean-runner workflow run](https://github.com/MakefieldWorks/Layertrail/actions/runs/36351084927)
+The opt-in [clean-runner workflow run](https://github.com/MakefieldWorks/Statekeep/actions/runs/36351084927)
 passed on macOS 15 and Windows 2022 before PR #98 merged. It ran typechecking,
 unit tests, host packaging verification, the original packaged open/search/compare
 smoke test, and the development-build Electron E2E suite. This supplies automated
@@ -163,14 +163,14 @@ visibility each have explicit 30-second limits. The overall test budget is
 180 seconds on Windows and 120 seconds on other platforms. Restart phase logs
 identify a stalled close or launch, and cleanup preserves the original failure.
 
-The [PR #100 platform run](https://github.com/MakefieldWorks/Layertrail/actions/runs/36368235037)
+The [PR #100 platform run](https://github.com/MakefieldWorks/Statekeep/actions/runs/36368235037)
 passed the expanded packaged durability test on fresh macOS 15 and Windows 2022
 runners at commit `83404c1`. The macOS job also passed the full development E2E
 suite. At the time of this review update, the Windows E2E suite was still running;
 its typecheck, unit tests, packaging verification, and packaged durability test
 had passed. This is automated clean-runner evidence, not a manual native-shell
 pass on a separate machine. Validation of the subsequent review fixes is tracked
-in [PR #100's checks](https://github.com/MakefieldWorks/Layertrail/pull/100/checks).
+in [PR #100's checks](https://github.com/MakefieldWorks/Statekeep/pull/100/checks).
 
 Manual native-shell checks, representative real import data, and signed/notarized
 distribution verification remain open.
@@ -178,13 +178,13 @@ distribution verification remain open.
 ## Windows local pass — 2026-10-19
 
 On a Windows 11 Pro machine at `main` `7002a2a` (bun 1.3.12, Electron 44.9.0),
-from `C:\code\Layertrail`:
+from `C:\code\Statekeep`:
 
 | Check | Result |
 | --- | --- |
 | `bun run typecheck` | Passed; no Svelte errors or warnings |
 | `bun run test` | 899 passed |
-| `bun run package:verify` | Passed; `dist\win-unpacked\Layertrail.exe` branding verified |
+| `bun run package:verify` | Passed; `dist\win-unpacked\Statekeep.exe` branding verified |
 | `bun run test:dogfood -- --project ./tmp/pilot-dogfood --packaged` | Passed (1.1m) against the 754-node fixture |
 | `bun run test:e2e` (hidden windows) | 74 passed, 15 failed, 2 skipped (27.7m) |
 | `bun run test:e2e` (visible windows, PR #104) | 89 passed, 2 expected skips (3.6m) |
@@ -196,8 +196,8 @@ too slowly on Windows for the UI suite, so Windows and Linux now default to
 visible E2E windows. The native focus/blur test, which only runs visibly,
 passed here.
 
-Robert then opened `dist\win-unpacked\Layertrail.exe` and reported the native
+Robert then opened `dist\win-unpacked\Statekeep.exe` and reported the native
 shell working properly: frame, taskbar icon, Open Recent, close/quit save
-behavior, and snapshot compare. The Explorer `.layertrail` document icon
+behavior, and snapshot compare. The Explorer `.statekeep` document icon
 needs an installer-registered association and is not covered by the unpacked
 build; check it with the first signed installer.

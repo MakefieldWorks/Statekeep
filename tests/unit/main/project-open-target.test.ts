@@ -8,7 +8,7 @@ import { resolveProjectOpenTarget } from '../../../src/main/project-open-target'
 let tmpDir: string
 
 beforeEach(() => {
-  tmpDir = join(tmpdir(), `layertrail-open-target-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  tmpDir = join(tmpdir(), `statekeep-open-target-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   mkdirSync(tmpDir, { recursive: true })
 })
 
@@ -19,26 +19,26 @@ afterEach(async () => {
 function writeProject(name = 'Lab'): string {
   const projectDir = join(tmpDir, name)
   mkdirSync(projectDir, { recursive: true })
-  writeFileSync(join(projectDir, 'Layertrail.layertrail'), '{}', 'utf8')
+  writeFileSync(join(projectDir, 'Statekeep.statekeep'), '{}', 'utf8')
   return projectDir
 }
 
 describe('resolveProjectOpenTarget', () => {
-  it('accepts a project directory containing Layertrail.layertrail', () => {
+  it('accepts a project directory containing Statekeep.statekeep', () => {
     const projectDir = writeProject()
 
     expect(resolveProjectOpenTarget(projectDir)).toEqual({ ok: true, data: projectDir })
   })
 
-  it('accepts a Layertrail.layertrail file and resolves to its project directory', () => {
+  it('accepts a Statekeep.statekeep file and resolves to its project directory', () => {
     const projectDir = writeProject()
 
-    expect(resolveProjectOpenTarget(join(projectDir, 'Layertrail.layertrail'))).toEqual({ ok: true, data: projectDir })
+    expect(resolveProjectOpenTarget(join(projectDir, 'Statekeep.statekeep'))).toEqual({ ok: true, data: projectDir })
   })
 
-  it('rejects a .layertrail file that is not its folder\'s project document', () => {
+  it('rejects a .statekeep file that is not its folder\'s project document', () => {
     const projectDir = writeProject('Copied Lab')
-    const copy = join(projectDir, 'Copy.layertrail')
+    const copy = join(projectDir, 'Copy.statekeep')
     writeFileSync(copy, '{}', 'utf8')
 
     const result = resolveProjectOpenTarget(copy)
@@ -53,17 +53,17 @@ describe('resolveProjectOpenTarget', () => {
     const result = resolveProjectOpenTarget(path)
 
     expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.error.message).toContain('expected a Layertrail project folder or .layertrail file')
+    if (!result.ok) expect(result.error.message).toContain('expected a Statekeep project folder or .statekeep file')
   })
 
-  it('rejects an existing folder that is not a Layertrail project', () => {
+  it('rejects an existing folder that is not a Statekeep project', () => {
     const folder = join(tmpDir, 'Not A Project')
     mkdirSync(folder)
 
     const result = resolveProjectOpenTarget(folder)
 
     expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.error.message).toContain('no Layertrail project document was found')
+    if (!result.ok) expect(result.error.message).toContain('no Statekeep project document was found')
   })
 
   it('rejects a missing path', () => {

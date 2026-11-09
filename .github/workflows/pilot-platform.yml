@@ -23,7 +23,7 @@ jobs:
     # always passed with, and the native focus test, which only runs with
     # visible windows, has not been validated on a hosted Windows desktop.
     env:
-      LAYERTRAIL_E2E_BACKGROUND: "1"
+      STATEKEEP_E2E_BACKGROUND: "1"
     strategy:
       fail-fast: false
       matrix:

@@ -1,5 +1,5 @@
 ---
-name: Layertrail
+name: Statekeep
 description: A calibrated instrument panel for structured projects — theme-neutral chrome, with color reserved entirely for change.
 colors:
   panel-paper: "#f8f8f7"
@@ -155,13 +155,13 @@ components:
     padding: "0"
 ---
 
-# Design System: Layertrail
+# Design System: Statekeep
 
 ## Overview
 
 **Creative North Star: "The Instrument Panel"**
 
-Layertrail reads like a calibrated readout, not a document. The chrome is warm, quiet, and almost
+Statekeep reads like a calibrated readout, not a document. The chrome is warm, quiet, and almost
 entirely colorless — a neutral gauge face — and every bit of color on screen is a signal about
 state. Density is deliberate and high: 32px rows, 12px labels, tabular numerals for counts. The
 panel does not decorate itself, because a decorated instrument is a harder instrument to read.
@@ -177,7 +177,7 @@ collapse into a single summarized fold marker, and the collapse is animated rath
 Regions of the tree literally change magnification based on relevance. That, not any color or
 shape choice, is what makes the interface feel like an instrument being focused.
 
-The interface ships with two paired theme families: **Layertrail Light / Dark** and **Layertrail
+The interface ships with two paired theme families: **Statekeep Light / Dark** and **Statekeep
 Graphite Light / Dark**. It follows the operating-system appearance by default, while people can
 choose either fixed appearance and independently choose the light and dark schemes in Settings.
 Themes change the instrument's chrome, never the meanings assigned to change color.
@@ -224,8 +224,8 @@ strongest invariant.
 
 ### Neutral
 
-Six ink steps and five surface steps. **Layertrail Light / Dark** use the canonical warm stone
-family. **Layertrail Graphite Light / Dark** use a higher-contrast, low-chroma carbon family for
+Six ink steps and five surface steps. **Statekeep Light / Dark** use the canonical warm stone
+family. **Statekeep Graphite Light / Dark** use a higher-contrast, low-chroma carbon family for
 people who prefer a cooler instrument surface. Both families preserve the semantic accent roles
 below, so color meanings never change with a selected scheme.
 
@@ -244,11 +244,11 @@ below, so color meanings never change with a selected scheme.
 
 ### Named Rules
 
-**The Reserved Spectrum Rule.** Color in Layertrail means *something changed*. No hue may be spent on
+**The Reserved Spectrum Rule.** Color in Statekeep means *something changed*. No hue may be spent on
 branding, emphasis, category, or delight. If a new element needs to stand out, it earns it through
 weight, size, spacing, or a hairline — never a color the diff view is already using.
 
-**The Theme-Neutral Rule.** Every neutral comes from the active theme's family. Layertrail themes
+**The Theme-Neutral Rule.** Every neutral comes from the active theme's family. Statekeep themes
 use warm stone; Graphite themes use low-chroma carbon. Never mix the two families in a component,
 and never use `gray`, `zinc`, `neutral`, or raw `slate` utilities. (One `text-slate-600` survives
 in the codebase; it is a defect, not a precedent.)
@@ -276,7 +276,7 @@ interface AppearancePreference {
 
 That pairing is intentional. Settings exposes a separate selector for each scheme, so a person can
 pair any built-in light theme with any built-in dark theme; System mode simply resolves the
-matching one. The shipped families are **Layertrail** (warm Stone) and **Graphite** (cool carbon).
+matching one. The shipped families are **Statekeep** (warm Stone) and **Graphite** (cool carbon).
 When user-defined theme packs arrive, they follow the same pairing model. A theme pack must provide
 every named token, declare `light` or `dark`, use validated hex colors, and meet contrast checks.
 It may supply token values only — never arbitrary CSS.
@@ -287,7 +287,7 @@ It may supply token values only — never arbitrary CSS.
 `Segoe UI`, `sans-serif`
 **Mono Font:** `JetBrains Mono`, `Fira Code`, `Menlo`, `monospace`
 
-**Character:** the system face, used deliberately rather than by default. Layertrail wants to look
+**Character:** the system face, used deliberately rather than by default. Statekeep wants to look
 like it belongs to the operating system it runs on, so it inherits the native face and spends its
 typographic personality on *scale and case* instead of on a distinctive family. The result is
 instrument-like: small, tight, evenly weighted, with uppercase micro-labels doing the annotating.

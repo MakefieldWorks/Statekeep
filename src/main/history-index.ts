@@ -71,8 +71,8 @@ export class HistoryIndexService {
 
   open(projectPath: string): void {
     this.close()
-    const dbPath = join(projectPath, '.layertrail', 'index', 'history.db')
-    mkdirSync(join(projectPath, '.layertrail', 'index'), { recursive: true })
+    const dbPath = join(projectPath, '.statekeep', 'index', 'history.db')
+    mkdirSync(join(projectPath, '.statekeep', 'index'), { recursive: true })
 
     const db = new Database(dbPath)
     db.pragma('journal_mode = WAL')

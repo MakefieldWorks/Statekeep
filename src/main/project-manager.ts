@@ -276,7 +276,7 @@ export class ProjectManager {
     if (this.archiveBusy) return err(ErrorCode.VALIDATION_FAILED, 'Wait for the archive operation to finish.')
     const documentPath = findProjectDocument(projectPath)
     if (!documentPath) {
-      return err(ErrorCode.PROJECT_NOT_FOUND, 'No Layertrail project document was found')
+      return err(ErrorCode.PROJECT_NOT_FOUND, 'No Statekeep project document was found')
     }
     try {
       const stat = statSync(documentPath)
@@ -489,7 +489,7 @@ export class ProjectManager {
       this.historyBeforeOperation = history
       if (this.currentProject?.path && existsSync(snapshotHistoryPath(this.currentProject.path))) {
         try {
-          mkdirSync(join(this.currentProject.path, '.layertrail'), { recursive: true })
+          mkdirSync(join(this.currentProject.path, '.statekeep'), { recursive: true })
           new HistoryBackupStore(this.currentProject.path, this.currentProject.id).save(history)
         } catch (error) {
           return err(ErrorCode.HISTORY_BACKUP_FAILED, `Could not protect history before the operation: ${error instanceof Error ? error.message : String(error)}`)
@@ -897,12 +897,12 @@ export class ProjectManager {
         // references cannot silently attach invented provenance to this point.
         const point: RecoveryPoint = {
           id: `reconciled-${uuidv7()}`, createdAt: new Date().toISOString(),
-          reason: 'reconciled', payloadPath: `.layertrail/recovery/${file.name}`,
+          reason: 'reconciled', payloadPath: `.statekeep/recovery/${file.name}`,
         }
         if (this.scanRecoveryFiles().token !== request.token) {
           return err(ErrorCode.VALIDATION_FAILED, 'Recovery files changed. Review them again.')
         }
-        const payload = this.operationStore()!.read(join(this.currentProject!.path!, '.layertrail', 'recovery', file.name))
+        const payload = this.operationStore()!.read(join(this.currentProject!.path!, '.statekeep', 'recovery', file.name))
         const parsedPayload = this.parseDocumentJson(payload.toString('utf8'))
         if (!parsedPayload.ok || parsedPayload.data.id !== this.currentProject!.id) {
           return err(ErrorCode.VALIDATION_FAILED, 'Recovery file changed. Review it again.')
@@ -1430,8 +1430,8 @@ export class ProjectManager {
       }
 
       if (recoveryPoint.reason === 'reconciled' &&
-          (lstatSync(join(this.currentProject.path, '.layertrail')).isSymbolicLink() ||
-           lstatSync(join(this.currentProject.path, '.layertrail', 'recovery')).isSymbolicLink() ||
+          (lstatSync(join(this.currentProject.path, '.statekeep')).isSymbolicLink() ||
+           lstatSync(join(this.currentProject.path, '.statekeep', 'recovery')).isSymbolicLink() ||
            !lstatSync(payloadPath).isFile() || lstatSync(payloadPath).isSymbolicLink())) {
         return err(ErrorCode.VALIDATION_FAILED, 'Added recovery files must remain regular local files.')
       }
@@ -1705,7 +1705,7 @@ export class ProjectManager {
     try {
       if (readDocumentHash(path) === baseline) return
     } catch { /* An unreadable file must never be replaced blindly. */ }
-    let message = 'The project file changed outside Layertrail or is no longer readable. Saving is paused. Review both versions before continuing.'
+    let message = 'The project file changed outside Statekeep or is no longer readable. Saving is paused. Review both versions before continuing.'
     if (this.currentProject?.path === projectPath) {
       try {
         const local = serializeProjectForPersistence(this.currentProject)
@@ -1726,7 +1726,7 @@ export class ProjectManager {
 
   private conflictRecoveryDirectory(projectPath: string): string {
     if (!existsSync(projectPath) || !lstatSync(projectPath).isDirectory() || lstatSync(projectPath).isSymbolicLink()) throw new Error('The project folder is missing, moved, or linked. Restore its original location before continuing.')
-    const metadata = join(projectPath, '.layertrail')
+    const metadata = join(projectPath, '.statekeep')
     const recovery = join(metadata, 'recovery')
     for (const path of [metadata, recovery]) {
       if (existsSync(path) && (!lstatSync(path).isDirectory() || lstatSync(path).isSymbolicLink())) throw new Error('Recovery copies require regular local directories.')

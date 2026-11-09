@@ -1,7 +1,7 @@
-// Normalizer for the LayertrailAPI contract suite.
+// Normalizer for the StatekeepAPI contract suite.
 //
 // The contract goldens must be reproducible by ANY backend that implements the
-// same LayertrailAPI (today's TypeScript ProjectManager; tomorrow a Rust/Tauri
+// same StatekeepAPI (today's TypeScript ProjectManager; tomorrow a Rust/Tauri
 // backend). So before a Result<T> is compared to a golden, we scrub the values
 // that are legitimately nondeterministic across runs and implementations:
 //

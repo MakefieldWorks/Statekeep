@@ -11,7 +11,7 @@ describe('detectCloudSyncPath', () => {
 
   it('detects Dropbox, OneDrive, Google Drive, and Box paths', () => {
     expect(detectCloudSyncPath('/Users/robert/Dropbox/Projects/Lab')?.provider).toBe('Dropbox')
-    expect(detectCloudSyncPath('C:\\Users\\Robert\\OneDrive - Lab\\Layertrail\\Project')?.provider).toBe('OneDrive')
+    expect(detectCloudSyncPath('C:\\Users\\Robert\\OneDrive - Lab\\Statekeep\\Project')?.provider).toBe('OneDrive')
     expect(detectCloudSyncPath('/Users/robert/Library/CloudStorage/GoogleDrive-robert/My Drive/Lab')?.provider)
       .toBe('Google Drive')
     expect(detectCloudSyncPath('/Users/robert/Library/CloudStorage/Box-Box/Lab')?.provider)

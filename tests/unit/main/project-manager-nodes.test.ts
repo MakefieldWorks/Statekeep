@@ -38,7 +38,7 @@ let project: Project
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function writeFixture(dir: string, data: object) {
-  writeFileSync(join(dir, 'Layertrail.layertrail'), JSON.stringify(data, null, 2), 'utf8')
+  writeFileSync(join(dir, 'Statekeep.statekeep'), JSON.stringify(data, null, 2), 'utf8')
 }
 
 // Build a minimal v2 document with a single root node.
@@ -65,7 +65,7 @@ function makeDocument(overrides: Partial<object> = {}) {
 }
 
 beforeEach(async () => {
-  tmpDir = join(tmpdir(), `layertrail-test-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  tmpDir = join(tmpdir(), `statekeep-test-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   mkdirSync(tmpDir, { recursive: true })
   writeFixture(tmpDir, makeDocument())
 

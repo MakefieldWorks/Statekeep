@@ -23,7 +23,7 @@ let manager: ProjectManager
 let projectDir: string
 
 beforeEach(async () => {
-  tmpDir = join(tmpdir(), `layertrail-snapshots-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  tmpDir = join(tmpdir(), `statekeep-snapshots-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   mkdirSync(tmpDir, { recursive: true })
 
   git = new GitService(noopLogger as any)
@@ -64,7 +64,7 @@ describe('snapshot workflow', () => {
     expect(timeline.data.events.find((event) => event.snapshotId === 'initial-setup')?.note)
       .toBe('Known-good rack configuration.')
 
-    const history = JSON.parse(readFileSync(join(projectDir, '.layertrail', 'history.json'), 'utf8'))
+    const history = JSON.parse(readFileSync(join(projectDir, '.statekeep', 'history.json'), 'utf8'))
     expect(history.snapshots['initial-setup'].note).toBe('Known-good rack configuration.')
   })
 
@@ -96,7 +96,7 @@ describe('snapshot workflow', () => {
     const created = await manager.snapshotCreate('metadata-only', 'Retained historical context')
     expect(created.ok).toBe(true)
 
-    const historyPath = join(projectDir, '.layertrail', 'history.json')
+    const historyPath = join(projectDir, '.statekeep', 'history.json')
     const history = JSON.parse(readFileSync(historyPath, 'utf8'))
     history.events = []
     writeFileSync(historyPath, JSON.stringify(history, null, 2), 'utf8')
@@ -318,7 +318,7 @@ describe('snapshot workflow', () => {
     const current = manager.getCurrent()!
     expect(current.nodes.some((node) => node.name === 'Rack Alpha')).toBe(true)
 
-    const document = JSON.parse(readFileSync(join(projectDir, 'Layertrail.layertrail'), 'utf8'))
+    const document = JSON.parse(readFileSync(join(projectDir, 'Statekeep.statekeep'), 'utf8'))
     expect(document.nodes.some((node: { name: string }) => node.name === 'Rack Alpha')).toBe(true)
   })
 
@@ -425,7 +425,7 @@ describe('snapshot workflow', () => {
   it('keeps the current project editable after reopening with damaged metadata', async () => {
     expect((await manager.snapshotCreate('baseline')).ok).toBe(true)
     await manager.flushAndClose()
-    const historyPath = join(projectDir, '.layertrail', 'history.json')
+    const historyPath = join(projectDir, '.statekeep', 'history.json')
     const damaged = '{damaged on disk'
     writeFileSync(historyPath, damaged)
     expect((await manager.openProject(projectDir)).ok).toBe(true)
@@ -440,7 +440,7 @@ describe('snapshot workflow', () => {
 
   it('does not treat a filesystem read failure as missing legacy metadata', async () => {
     expect((await manager.snapshotCreate('baseline')).ok).toBe(true)
-    const historyPath = join(projectDir, '.layertrail', 'history.json')
+    const historyPath = join(projectDir, '.statekeep', 'history.json')
     renameSync(historyPath, `${historyPath}.backup`)
     mkdirSync(historyPath)
     expect(await manager.snapshotCreate('blocked'))
@@ -468,13 +468,13 @@ describe('snapshot workflow', () => {
     await manager.saveProject()
     manager.cancelAutosave()
     await manager.waitForHistoryBackfill()
-    const historyPath = join(projectDir, '.layertrail', 'history.json')
+    const historyPath = join(projectDir, '.statekeep', 'history.json')
     const original = readFileSync(historyPath, 'utf8')
     const document = readFileSync(join(projectDir, PROJECT_DOCUMENT_FILE), 'utf8')
     const current = structuredClone(manager.getCurrent())
     const edits = manager.editHistoryState()
     const snapshots = await git.listSnapshots(projectDir)
-    const recoveryFiles = readdirSync(join(projectDir, '.layertrail', 'recovery'))
+    const recoveryFiles = readdirSync(join(projectDir, '.statekeep', 'recovery'))
     writeFileSync(historyPath, damaged, 'utf8')
 
     for (const result of [
@@ -496,7 +496,7 @@ describe('snapshot workflow', () => {
     expect(manager.getCurrent()).toEqual(current)
     expect(manager.editHistoryState()).toEqual(edits)
     expect(await git.listSnapshots(projectDir)).toEqual(snapshots)
-    expect(readdirSync(join(projectDir, '.layertrail', 'recovery'))).toEqual(recoveryFiles)
+    expect(readdirSync(join(projectDir, '.statekeep', 'recovery'))).toEqual(recoveryFiles)
 
     // Restoring the original file is sufficient; no restart or destructive reset.
     writeFileSync(historyPath, original, 'utf8')
@@ -518,7 +518,7 @@ describe('per-node history index integration', () => {
   let isolatedProjectDir: string
 
   beforeEach(async () => {
-    isolatedTmp = join(tmpdir(), `layertrail-history-int-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+    isolatedTmp = join(tmpdir(), `statekeep-history-int-${Date.now()}-${Math.random().toString(36).slice(2)}`)
     mkdirSync(isolatedTmp, { recursive: true })
 
     const igit = new GitService(noopLogger as any)
@@ -597,7 +597,7 @@ describe('per-node history index integration', () => {
       incompleteSnapshotIds: () => [],
     } as unknown as HistoryIndexService
 
-    const tmp = join(tmpdir(), `layertrail-history-faulty-${Date.now()}`)
+    const tmp = join(tmpdir(), `statekeep-history-faulty-${Date.now()}`)
     mkdirSync(tmp, { recursive: true })
     const localGit = new GitService(noopLogger as any)
     const faultyManager = new ProjectManager(localGit, noopLogger as any, new SearchIndexService(), faultyHistory)
@@ -639,9 +639,9 @@ describe('per-node history index integration', () => {
 
     // Close, wipe history.db, reopen — backfill should run on openProject.
     await isolatedManager.flushAndClose()
-    await rm(join(isolatedProjectDir, '.layertrail', 'index', 'history.db'), { force: true, maxRetries: 10, retryDelay: 300 })
-    await rm(join(isolatedProjectDir, '.layertrail', 'index', 'history.db-shm'), { force: true, maxRetries: 10, retryDelay: 300 })
-    await rm(join(isolatedProjectDir, '.layertrail', 'index', 'history.db-wal'), { force: true, maxRetries: 10, retryDelay: 300 })
+    await rm(join(isolatedProjectDir, '.statekeep', 'index', 'history.db'), { force: true, maxRetries: 10, retryDelay: 300 })
+    await rm(join(isolatedProjectDir, '.statekeep', 'index', 'history.db-shm'), { force: true, maxRetries: 10, retryDelay: 300 })
+    await rm(join(isolatedProjectDir, '.statekeep', 'index', 'history.db-wal'), { force: true, maxRetries: 10, retryDelay: 300 })
 
     const igit = new GitService(noopLogger as any)
     const refreshedHistory = new HistoryIndexService()
@@ -672,7 +672,7 @@ describe('per-node history index integration', () => {
 
     // Now corrupt s2's complete flag.
     const Database = (await import('better-sqlite3')).default
-    const dbPath = join(isolatedProjectDir, '.layertrail', 'index', 'history.db')
+    const dbPath = join(isolatedProjectDir, '.statekeep', 'index', 'history.db')
     await isolatedManager.flushAndClose()  // release WAL handle so direct write is safe
     const db = new Database(dbPath)
     try {

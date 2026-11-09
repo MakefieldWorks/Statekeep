@@ -39,7 +39,7 @@ function probe(command, args, env = {}) {
 }
 
 function releaseAssets() {
-  const prefix = `Layertrail-${VERSION}-${OS}-`
+  const prefix = `Statekeep-${VERSION}-${OS}-`
   const assets = readdirSync(DIST_DIR)
     .filter((name) => name.startsWith(prefix) && ASSET_EXTENSIONS.some((ext) => name.endsWith(ext)))
     .map((name) => join(DIST_DIR, name))
@@ -51,7 +51,7 @@ function releaseAssets() {
 function macAppBundles() {
   return readdirSync(DIST_DIR, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && entry.name.startsWith('mac'))
-    .map((entry) => join(DIST_DIR, entry.name, 'Layertrail.app'))
+    .map((entry) => join(DIST_DIR, entry.name, 'Statekeep.app'))
     .filter((path) => existsSync(path))
 }
 
@@ -70,7 +70,7 @@ function stapleValidate(app) {
 
 function verifyMac() {
   const bundles = macAppBundles()
-  assert(bundles.length > 0, `No Layertrail.app bundles under ${DIST_DIR}/mac*`)
+  assert(bundles.length > 0, `No Statekeep.app bundles under ${DIST_DIR}/mac*`)
 
   for (const app of bundles) {
     const details = probe('codesign', ['--display', '--verbose=4', app])
@@ -109,14 +109,14 @@ function authenticodeStatus(path) {
   // into code. -LiteralPath keeps [] and spaces from acting as wildcards.
   // Windows PowerShell can write CLIXML progress records to stderr on a fresh
   // runner, so silence progress and read the status from stdout only.
-  const script = "$ProgressPreference = 'SilentlyContinue'; (Get-AuthenticodeSignature -LiteralPath $env:LAYERTRAIL_SIGN_TARGET).Status"
-  const result = probe('powershell', ['-NoProfile', '-NonInteractive', '-Command', script], { LAYERTRAIL_SIGN_TARGET: path })
+  const script = "$ProgressPreference = 'SilentlyContinue'; (Get-AuthenticodeSignature -LiteralPath $env:STATEKEEP_SIGN_TARGET).Status"
+  const result = probe('powershell', ['-NoProfile', '-NonInteractive', '-Command', script], { STATEKEEP_SIGN_TARGET: path })
   assert(result.ok, `Get-AuthenticodeSignature failed for ${path}:\n${result.output}`)
   return result.stdout.trim()
 }
 
 function verifyWindows(assets) {
-  const targets = [join(DIST_DIR, 'win-unpacked', 'Layertrail.exe'), ...assets]
+  const targets = [join(DIST_DIR, 'win-unpacked', 'Statekeep.exe'), ...assets]
   for (const path of targets) {
     assert(existsSync(path), `Missing ${path}`)
     const status = authenticodeStatus(path)

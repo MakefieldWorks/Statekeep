@@ -1,10 +1,10 @@
 /// <reference types="svelte" />
 
-import type { LayertrailAPI } from '../../shared/ipc'
+import type { StatekeepAPI } from '../../shared/ipc'
 
 declare global {
   interface Window {
-    api: LayertrailAPI
+    api: StatekeepAPI
   }
 }
 

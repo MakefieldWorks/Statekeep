@@ -1,13 +1,13 @@
 import { defineConfig } from '@playwright/test'
 
 // Each E2E test launches Electron. On macOS, keep its native windows out of the
-// foreground by default; set LAYERTRAIL_E2E_VISIBLE=1 to watch a run. Windows and
+// foreground by default; set STATEKEEP_E2E_VISIBLE=1 to watch a run. Windows and
 // Linux render never-shown windows so slowly that UI tests hit their timeouts
 // (on Windows, snapshot tests took 30s+ hidden vs ~4s visible), so they default
-// to visible windows. LAYERTRAIL_E2E_BACKGROUND=1 still forces hidden mode.
-process.env['LAYERTRAIL_E2E_BACKGROUND'] = process.env['LAYERTRAIL_E2E_VISIBLE'] === '1'
+// to visible windows. STATEKEEP_E2E_BACKGROUND=1 still forces hidden mode.
+process.env['STATEKEEP_E2E_BACKGROUND'] = process.env['STATEKEEP_E2E_VISIBLE'] === '1'
   ? '0'
-  : (process.env['LAYERTRAIL_E2E_BACKGROUND'] ?? (process.platform === 'darwin' ? '1' : '0'))
+  : (process.env['STATEKEEP_E2E_BACKGROUND'] ?? (process.platform === 'darwin' ? '1' : '0'))
 
 export default defineConfig({
   testDir: './tests/e2e',

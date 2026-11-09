@@ -15,13 +15,13 @@ let recovery: string
 const name = 'recovery-unlisted.document.json'
 
 beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), 'layertrail-reconcile-'))
+  root = mkdtempSync(join(tmpdir(), 'statekeep-reconcile-'))
   manager = new ProjectManager(new GitService(logger as any), logger as any)
   const result = await manager.createProject('Reconciliation', root)
   if (!result.ok) throw new Error(result.error.message)
   path = result.data.path!
-  historyPath = join(path, '.layertrail', 'history.json')
-  recovery = join(path, '.layertrail', 'recovery')
+  historyPath = join(path, '.statekeep', 'history.json')
+  recovery = join(path, '.statekeep', 'recovery')
   await manager.snapshotCreate('baseline')
   mkdirSync(recovery, { recursive: true })
   writeFileSync(join(recovery, name), JSON.stringify(manager.getCurrent()))
@@ -184,7 +184,7 @@ describe('recovery file reconciliation', () => {
       expect(readFileSync(join(recovery, name))).toEqual(payload)
       expect((await preview()).files.find(file => file.name === name)?.eligible).toBe(true)
     }
-    expect(JSON.parse(readFileSync(join(path, '.layertrail', 'history.backup.json'), 'utf8')).history).toEqual(after)
+    expect(JSON.parse(readFileSync(join(path, '.statekeep', 'history.backup.json'), 'utf8')).history).toEqual(after)
     expect((await manager.forgetRecoveryFile({ id: point.id })).ok).toBe(false)
   })
 })

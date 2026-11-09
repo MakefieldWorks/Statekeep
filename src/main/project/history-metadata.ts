@@ -1,4 +1,4 @@
-// Snapshot history metadata (.layertrail/history.json): read, write, and the
+// Snapshot history metadata (.statekeep/history.json): read, write, and the
 // pure timeline helpers built on it. Reads never repair or overwrite damaged
 // metadata; they throw HistoryMetadataReadError so callers block history
 // operations and the user can restore from the automatic backup.
@@ -22,7 +22,7 @@ const MAX_RECOVERY_POINTS = 10                 // cap stored auto-saved recovery
 export class HistoryMetadataReadError extends Error {}
 
 export function snapshotHistoryPath(projectPath: string): string {
-  return join(projectPath, '.layertrail', 'history.json')
+  return join(projectPath, '.statekeep', 'history.json')
 }
 
 // Parse history metadata from `bytes` when given (callers that already hold
@@ -41,7 +41,7 @@ export function readSnapshotHistoryFile(projectPath: string, projectId: string, 
     logger.warn('snapshot history unavailable; preserving original metadata', { path: historyPath, error: msg })
     throw new HistoryMetadataReadError(
       `History metadata could not be read. The original file is preserved at ${historyPath}. ` +
-      'Restore this file from a known-good backup, or open the project with a Layertrail version that supports it, then refresh. ' +
+      'Restore this file from a known-good backup, or open the project with a Statekeep version that supports it, then refresh. ' +
       `Snapshot creation, revert, and recovery are blocked until it can be read. Details: ${msg}`
     )
   }
@@ -57,7 +57,7 @@ export function writeSnapshotHistoryFile(
   deleteRemovedPayloads: boolean,
   logger: Logger,
 ): void {
-  const metadataDirectory = join(projectPath, '.layertrail')
+  const metadataDirectory = join(projectPath, '.statekeep')
   const historyPath = snapshotHistoryPath(projectPath)
   mkdirSync(metadataDirectory, { recursive: true })
   writeHistoryFile(historyPath, JSON.stringify(history, null, 2))
@@ -177,10 +177,10 @@ export async function createSafetyRecoveryPointIfNeeded(project: Project, git: G
   if (head && head === current) return null
 
   const id = `recovery-${uuidv7()}`
-  const recoveryDir = join(project.path, '.layertrail', 'recovery')
+  const recoveryDir = join(project.path, '.statekeep', 'recovery')
   // Recovery payloads are internal sidecars, not user-openable documents.
-  // Keep their JSON suffix so they cannot be mistaken for Layertrail projects.
-  const payloadPath = join('.layertrail', 'recovery', `${id}.document.json`)
+  // Keep their JSON suffix so they cannot be mistaken for Statekeep projects.
+  const payloadPath = join('.statekeep', 'recovery', `${id}.document.json`)
   mkdirSync(recoveryDir, { recursive: true })
   writeFileSync(join(project.path, payloadPath), current, 'utf8')
 

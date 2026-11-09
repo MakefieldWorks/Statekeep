@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 # The mark (stepped layers, transparent background) is used inside the app and
 # on the web. The app icon puts that mark on a rounded tile sized to the macOS
 # icon grid (824px tile on a 1024px canvas) and feeds the OS icon files.
-SOURCE_SVG = ROOT / "resources" / "layertrail.svg"
+SOURCE_SVG = ROOT / "resources" / "statekeep.svg"
 ICON_SVG = ROOT / "resources" / "icon.svg"
 RESOURCES_DIR = ROOT / "resources"
 RENDERER_PUBLIC_DIR = ROOT / "src" / "renderer" / "public"
@@ -57,10 +57,10 @@ def generate_ico(base_png: Path, target: Path) -> None:
 
 def generate_web_assets(mark_png: Path) -> None:
     RENDERER_PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(SOURCE_SVG, RENDERER_PUBLIC_DIR / "layertrail-mark.svg")
+    shutil.copy2(SOURCE_SVG, RENDERER_PUBLIC_DIR / "statekeep-mark.svg")
 
     image = Image.open(mark_png)
-    image.resize((512, 512), Image.Resampling.LANCZOS).save(RENDERER_PUBLIC_DIR / "layertrail-mark.png")
+    image.resize((512, 512), Image.Resampling.LANCZOS).save(RENDERER_PUBLIC_DIR / "statekeep-mark.png")
     image.resize((256, 256), Image.Resampling.LANCZOS).save(RENDERER_PUBLIC_DIR / "favicon.png")
 
 
@@ -75,17 +75,17 @@ def main() -> int:
     render_png(ICON_SVG, base_png)
     generate_icns(base_png, icns_path)
     generate_ico(base_png, ico_path)
-    with tempfile.TemporaryDirectory(prefix="layertrail-mark-") as tmpdir:
+    with tempfile.TemporaryDirectory(prefix="statekeep-mark-") as tmpdir:
         mark_png = Path(tmpdir) / "mark.png"
         render_png(SOURCE_SVG, mark_png)
         generate_web_assets(mark_png)
 
-    print("Generated branding assets from resources/icon.svg and resources/layertrail.svg")
+    print("Generated branding assets from resources/icon.svg and resources/statekeep.svg")
     print(f"- {base_png.relative_to(ROOT)}")
     print(f"- {icns_path.relative_to(ROOT)}")
     print(f"- {ico_path.relative_to(ROOT)}")
-    print(f"- {(RENDERER_PUBLIC_DIR / 'layertrail-mark.svg').relative_to(ROOT)}")
-    print(f"- {(RENDERER_PUBLIC_DIR / 'layertrail-mark.png').relative_to(ROOT)}")
+    print(f"- {(RENDERER_PUBLIC_DIR / 'statekeep-mark.svg').relative_to(ROOT)}")
+    print(f"- {(RENDERER_PUBLIC_DIR / 'statekeep-mark.png').relative_to(ROOT)}")
     print(f"- {(RENDERER_PUBLIC_DIR / 'favicon.png').relative_to(ROOT)}")
     return 0
 

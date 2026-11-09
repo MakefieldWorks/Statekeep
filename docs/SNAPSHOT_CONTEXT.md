@@ -15,12 +15,12 @@ Descriptions are optional so quick checkpoints stay quick. They are immutable
 with the snapshot: changing the description later would change the historical
 record without changing the saved configuration.
 
-Layertrail displays snapshot descriptions in the chronological timeline, snapshot
+Statekeep displays snapshot descriptions in the chronological timeline, snapshot
 comparison header, and affected nodes' history. Markdown and HTML reports
 include the description for each saved side. CSV exports add `from_description` and
 `to_description` columns to every row so each row keeps its comparison context
 when filtered or copied elsewhere. The live `Current project` side has no
 snapshot description.
 
-A description records user-supplied context. Layertrail does not infer that the
+A description records user-supplied context. Statekeep does not infer that the
 configuration caused the stated test result or outcome.

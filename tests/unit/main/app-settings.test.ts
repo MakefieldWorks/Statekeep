@@ -13,7 +13,7 @@ import type { Project } from '../../../src/shared/types'
 let tmpDir: string
 
 beforeEach(() => {
-  tmpDir = join(tmpdir(), `layertrail-app-settings-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  tmpDir = join(tmpdir(), `statekeep-app-settings-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   mkdirSync(tmpDir, { recursive: true })
 })
 
@@ -117,24 +117,24 @@ describe('AppSettingsStore', () => {
       launchBehavior: 'project-hub',
       appearance: {
         mode: 'system',
-        lightThemeId: 'layertrail-light',
-        darkThemeId: 'layertrail-dark',
+        lightThemeId: 'statekeep-light',
+        darkThemeId: 'statekeep-dark',
       },
     })
     store.updatePreferences({
       launchBehavior: 'reopen-last-project',
-      appearance: { mode: 'dark', lightThemeId: 'layertrail-graphite-light' },
+      appearance: { mode: 'dark', lightThemeId: 'statekeep-graphite-light' },
     })
     store.updatePreferences({
-      appearance: { darkThemeId: 'layertrail-graphite-dark' },
+      appearance: { darkThemeId: 'statekeep-graphite-dark' },
     })
 
     expect(new AppSettingsStore(storePath()).getPreferences()).toEqual({
       launchBehavior: 'reopen-last-project',
       appearance: {
         mode: 'dark',
-        lightThemeId: 'layertrail-graphite-light',
-        darkThemeId: 'layertrail-graphite-dark',
+        lightThemeId: 'statekeep-graphite-light',
+        darkThemeId: 'statekeep-graphite-dark',
       },
     })
   })
@@ -156,8 +156,8 @@ describe('AppSettingsStore', () => {
       launchBehavior: 'reopen-last-project',
       appearance: {
         mode: 'dark',
-        lightThemeId: 'layertrail-light',
-        darkThemeId: 'layertrail-dark',
+        lightThemeId: 'statekeep-light',
+        darkThemeId: 'statekeep-dark',
       },
     })
   })
@@ -165,7 +165,7 @@ describe('AppSettingsStore', () => {
   it('resets window and pane layout without clearing project history', () => {
     const projectDir = join(tmpDir, 'Workspace Lab')
     mkdirSync(projectDir)
-    writeFileSync(join(projectDir, 'Layertrail.layertrail'), '{}', 'utf8')
+    writeFileSync(join(projectDir, 'Statekeep.statekeep'), '{}', 'utf8')
     const store = new AppSettingsStore(storePath())
     store.updateWindowState({
       bounds: { x: 40, y: 50, width: 1200, height: 900 },
@@ -189,7 +189,7 @@ describe('AppSettingsStore', () => {
   it('tracks last project and marks missing projects', () => {
     const projectDir = join(tmpDir, 'Workspace Lab')
     mkdirSync(projectDir)
-    writeFileSync(join(projectDir, 'Layertrail.layertrail'), '{}', 'utf8')
+    writeFileSync(join(projectDir, 'Statekeep.statekeep'), '{}', 'utf8')
 
     const store = new AppSettingsStore(storePath())
     store.recordLastProject(project(projectDir))
@@ -199,7 +199,7 @@ describe('AppSettingsStore', () => {
       exists: true,
     })
 
-    rmSync(join(projectDir, 'Layertrail.layertrail'))
+    rmSync(join(projectDir, 'Statekeep.statekeep'))
     expect(store.getWorkspaceSettings().lastProject).toMatchObject({
       path: projectDir,
       exists: false,

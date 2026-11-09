@@ -1,6 +1,6 @@
 # Undo and Redo
 
-Layertrail keeps editing history for the Current Project while it is open. Use
+Statekeep keeps editing history for the Current Project while it is open. Use
 the Undo/Redo toolbar buttons, Edit menu, or keyboard shortcuts:
 
 - Undo: Cmd+Z on macOS; Ctrl+Z on Windows/Linux.

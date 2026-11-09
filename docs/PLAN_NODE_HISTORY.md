@@ -11,7 +11,7 @@ The data already exists across N immutable snapshots in git. The plan adds a SQL
 ## Architecture overview
 
 ```
-.layertrail/
+.statekeep/
   index/
     search.db       (existing — FTS5 for node name/property search)
     history.db      (NEW — per-node, per-snapshot state)

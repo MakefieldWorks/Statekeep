@@ -25,7 +25,7 @@ function create(name: string, parent = root) {
 function content(project = current()) { return structuredClone({ nodes: project.nodes, templates: project.templates }) }
 
 beforeEach(async () => {
-  directory = mkdtempSync(join(tmpdir(), 'layertrail-undo-'))
+  directory = mkdtempSync(join(tmpdir(), 'statekeep-undo-'))
   git = new GitService(logger)
   search = new SearchIndexService()
   manager = new ProjectManager(git, logger, search)
@@ -108,7 +108,7 @@ describe('project editing history', () => {
     expect(content()).toEqual(imported)
     value(manager.undo())
     value(await manager.flushAndClose())
-    const persisted = JSON.parse(readFileSync(join(directory, 'Lab', 'Layertrail.layertrail'), 'utf8'))
+    const persisted = JSON.parse(readFileSync(join(directory, 'Lab', 'Statekeep.statekeep'), 'utf8'))
     expect(persisted.nodes).toEqual(before.nodes)
     value(await manager.openProject(join(directory, 'Lab')))
     expect(manager.editHistoryState()).toEqual({ undoLabel: null, redoLabel: null })

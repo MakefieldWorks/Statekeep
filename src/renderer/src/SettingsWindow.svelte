@@ -75,7 +75,7 @@
       error = `Could not save settings: ${result.error.message}`
       return
     }
-    status = 'Saved. This will take effect the next time Layertrail starts.'
+    status = 'Saved. This will take effect the next time Statekeep starts.'
   }
 
   function applyAppearancePreference(preference: AppearancePreference) {
@@ -124,7 +124,7 @@
 </script>
 
 <svelte:head>
-  <title>Layertrail Settings</title>
+  <title>Statekeep Settings</title>
 </svelte:head>
 
 {#if desktopChrome.supportsWindowDragRegion}
@@ -138,9 +138,9 @@
   <aside class="flex w-52 shrink-0 flex-col border-r border-stone-200 bg-stone-100/70 px-3 py-5 {desktopChrome.reservesTrafficLightSpace ? 'pt-12' : ''}">
     <div class="flex items-center gap-2.5 px-2 pb-6 [-webkit-app-region:no-drag]">
       <div class="flex h-7 w-7 items-center justify-center rounded-md bg-white ring-1 ring-stone-200">
-        <img src="./layertrail-mark.svg" alt="" class="h-4 w-4" />
+        <img src="./statekeep-mark.svg" alt="" class="h-4 w-4" />
       </div>
-      <span class="text-sm font-semibold tracking-tight text-stone-800">Layertrail</span>
+      <span class="text-sm font-semibold tracking-tight text-stone-800">Statekeep</span>
     </div>
 
     <nav aria-label="Settings categories" class="space-y-1 [-webkit-app-region:no-drag]">
@@ -179,7 +179,7 @@
       {#if activeSection === 'general'}
         <header class="border-b border-stone-200 pb-6">
           <h1 class="text-xl font-semibold tracking-tight text-stone-900">General</h1>
-          <p class="mt-1.5 text-sm text-stone-500">Application behavior that applies to every Layertrail project.</p>
+          <p class="mt-1.5 text-sm text-stone-500">Application behavior that applies to every Statekeep project.</p>
         </header>
 
         <section class="pt-7" aria-labelledby="appearance-heading">
@@ -188,7 +188,7 @@
             <div class="flex items-center justify-between gap-8 px-5 py-4">
               <div class="min-w-0">
                 <label for="theme-preference" class="text-sm font-medium text-stone-800">Appearance mode</label>
-                <p class="mt-1 text-xs leading-5 text-stone-500">Follow your system or keep Layertrail in a fixed light or dark appearance.</p>
+                <p class="mt-1 text-xs leading-5 text-stone-500">Follow your system or keep Statekeep in a fixed light or dark appearance.</p>
               </div>
               <select
                 id="theme-preference"
@@ -247,7 +247,7 @@
           <div class="mt-3 divide-y divide-stone-100 overflow-hidden rounded-lg border border-stone-200 bg-white">
             <div class="flex items-center justify-between gap-8 px-5 py-4">
               <div class="min-w-0">
-                <label for="launch-behavior" class="text-sm font-medium text-stone-800">When Layertrail starts</label>
+                <label for="launch-behavior" class="text-sm font-medium text-stone-800">When Statekeep starts</label>
                 <p class="mt-1 text-xs leading-5 text-stone-500">A project opened from Finder or Explorer always takes priority.</p>
               </div>
               <select
@@ -267,7 +267,7 @@
       {:else}
         <header class="border-b border-stone-200 pb-6">
           <h1 class="text-xl font-semibold tracking-tight text-stone-900">Workspace</h1>
-          <p class="mt-1.5 text-sm text-stone-500">Restore Layertrail’s working layout without changing any project data.</p>
+          <p class="mt-1.5 text-sm text-stone-500">Restore Statekeep’s working layout without changing any project data.</p>
         </header>
 
         <section class="pt-7" aria-labelledby="layout-heading">

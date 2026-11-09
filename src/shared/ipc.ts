@@ -164,7 +164,7 @@ export interface AppPreferencesPatch {
   appearance?: Partial<AppearancePreference>
 }
 
-/** A project shown in Layertrail's desktop project hub and native File > Open Recent menu. */
+/** A project shown in Statekeep's desktop project hub and native File > Open Recent menu. */
 export interface RecentProject {
   path: string
   name: string
@@ -180,7 +180,7 @@ export type FolderDialogPurpose = 'open-project' | 'create-project'
 // Node mutation methods return Result<Project> — the full updated project state
 // after each mutation. The renderer replaces its local store entirely, which
 // eliminates any possibility of partial-sync bugs.
-export interface LayertrailAPI {
+export interface StatekeepAPI {
   historyOperation: {
     status(): Promise<Result<{ pending: boolean }>>
     review(): Promise<Result<InterruptedHistoryPreview>>
@@ -202,7 +202,7 @@ export interface LayertrailAPI {
   project: {
     create(name: string, parentPath: string): Promise<Result<Project>>
     open(path: string): Promise<Result<Project>>
-    /** Creates (once) and opens Layertrail's user-owned sample project. */
+    /** Creates (once) and opens Statekeep's user-owned sample project. */
     openExample(): Promise<Result<Project>>
     save(): Promise<Result<void>>
     getCurrent(): Promise<Result<Project | null>>

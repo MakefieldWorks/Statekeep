@@ -64,7 +64,7 @@ function main(argv) {
   }
 
   const summary = summarizeProject(project, metadata)
-  console.log(`Generated Layertrail project at ${projectDir}`)
+  console.log(`Generated Statekeep project at ${projectDir}`)
   console.log(`Nodes: ${summary.nodeCount}`)
   console.log(`Depth: ${summary.maxDepth}`)
   console.log(`Leaf nodes: ${summary.leafCount}`)
@@ -411,18 +411,18 @@ function countChildren(project, parentId, excludeId = null) {
 }
 
 function writeDocument(projectDir, project) {
-  writeFileSync(`${projectDir}/Layertrail.layertrail`, JSON.stringify(project, null, 2), 'utf8')
+  writeFileSync(`${projectDir}/Statekeep.statekeep`, JSON.stringify(project, null, 2), 'utf8')
 }
 
 function initializeGit(projectDir) {
   runGit(projectDir, ['init'])
-  runGit(projectDir, ['add', 'Layertrail.layertrail'])
-  runGit(projectDir, ['-c', 'user.email=layertrail@local', '-c', 'user.name=Layertrail', 'commit', '-m', 'Initial generated project'])
+  runGit(projectDir, ['add', 'Statekeep.statekeep'])
+  runGit(projectDir, ['-c', 'user.email=statekeep@local', '-c', 'user.name=Statekeep', 'commit', '-m', 'Initial generated project'])
 }
 
 function createSnapshot(projectDir, name) {
-  runGit(projectDir, ['add', 'Layertrail.layertrail'])
-  runGit(projectDir, ['-c', 'user.email=layertrail@local', '-c', 'user.name=Layertrail', 'commit', '--allow-empty', '-m', name])
+  runGit(projectDir, ['add', 'Statekeep.statekeep'])
+  runGit(projectDir, ['-c', 'user.email=statekeep@local', '-c', 'user.name=Statekeep', 'commit', '--allow-empty', '-m', name])
   runGit(projectDir, ['tag', `snapshot/${name}`])
 }
 

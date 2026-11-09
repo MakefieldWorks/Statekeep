@@ -7,15 +7,15 @@ import type { MenuCommandId } from '../../src/shared/menu-commands'
 const ROOT_DIR = process.cwd()
 const MAIN_ENTRY = join(ROOT_DIR, 'out', 'main', 'index.js')
 
-type LayertrailFixtures = {
+type StatekeepFixtures = {
   electronApp: ElectronApplication
   appPage: Page
   workspaceDir: string
 }
 
-export const test = base.extend<LayertrailFixtures>({
+export const test = base.extend<StatekeepFixtures>({
   workspaceDir: async ({}, use) => {
-    const dir = mkdtempSync(join(tmpdir(), 'layertrail-e2e-'))
+    const dir = mkdtempSync(join(tmpdir(), 'statekeep-e2e-'))
     try {
       await use(dir)
     } finally {
@@ -30,14 +30,14 @@ export const test = base.extend<LayertrailFixtures>({
     }
 
     const electronApp = await electron.launch({
-      // Keep each test independent from a running copy of Layertrail and from
+      // Keep each test independent from a running copy of Statekeep and from
       // any persisted user preferences on the development machine.
       args: [MAIN_ENTRY, `--user-data-dir=${join(workspaceDir, 'electron-user-data')}`],
       cwd: ROOT_DIR,
       env: {
         ...process.env,
         NODE_ENV: 'test',
-        LAYERTRAIL_EXAMPLE_PROJECTS_DIR: join(workspaceDir, 'example-projects'),
+        STATEKEEP_EXAMPLE_PROJECTS_DIR: join(workspaceDir, 'example-projects'),
       },
     })
 
@@ -63,7 +63,7 @@ export { expect }
 // filtering, so suppress only the popup and keep normal input events.
 export async function fillPropertyKey(page: Page, value: string): Promise<void> {
   const input = page.getByTestId('inventory-filter-property-key')
-  if (process.env['LAYERTRAIL_E2E_BACKGROUND'] === '1') {
+  if (process.env['STATEKEEP_E2E_BACKGROUND'] === '1') {
     await input.evaluate(element => element.removeAttribute('list'))
   }
   await input.fill(value)

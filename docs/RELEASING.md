@@ -1,4 +1,4 @@
-# Releasing Layertrail
+# Releasing Statekeep
 
 Release assets come from `.github/workflows/release.yml`. It runs only for a
 `v*` tag or a manual dispatch, so macOS and Windows runners never start from an
@@ -6,9 +6,9 @@ ordinary push or PR (see the CI policy in `CLAUDE.md`).
 
 | Platform | Asset | Alpha signing |
 |----------|-------|---------------|
-| macOS (arm64, x64) | `Layertrail-<version>-mac-<arch>.dmg` | The app inside is Developer ID signed (hardened runtime), notarized and stapled; the DMG image itself is unsigned |
-| Windows (x64) | `Layertrail-<version>-win-x64.exe` (NSIS) | The app and installer are Authenticode signed through Azure Trusted Signing when it is configured (see below); otherwise they are unsigned. SmartScreen may still warn until the certificate builds download reputation |
-| Linux (x64) | `Layertrail-<version>-linux-x86_64.AppImage`, `.deb`, `.rpm` | Unsigned; verify the published SHA256SUMS before installing any Linux asset |
+| macOS (arm64, x64) | `Statekeep-<version>-mac-<arch>.dmg` | The app inside is Developer ID signed (hardened runtime), notarized and stapled; the DMG image itself is unsigned |
+| Windows (x64) | `Statekeep-<version>-win-x64.exe` (NSIS) | The app and installer are Authenticode signed through Azure Trusted Signing when it is configured (see below); otherwise they are unsigned. SmartScreen may still warn until the certificate builds download reputation |
+| Linux (x64) | `Statekeep-<version>-linux-x86_64.AppImage`, `.deb`, `.rpm` | Unsigned; verify the published SHA256SUMS before installing any Linux asset |
 
 Every release also carries `SHA256SUMS.txt` covering all assets.
 
@@ -35,7 +35,7 @@ once a test machine can run the Linux desktop checklist in
   signs with it automatically; it notarizes only when the `APPLE_API_*`
   variables below are set. Without them it logs "skipped macOS notarization".
   Without a certificate, run it as `CSC_IDENTITY_AUTO_DISCOVERY=false
-  LAYERTRAIL_ADHOC_SIGN=1 bun run package` to get an ad-hoc signed app that
+  STATEKEEP_ADHOC_SIGN=1 bun run package` to get an ad-hoc signed app that
   launches after Open Anyway (`scripts/adhoc-sign-mac.cjs`).
 - Release builds come only from the release workflow, so every published asset
   is built from a tagged commit on clean runners.
@@ -98,7 +98,7 @@ The app registration needs the **Artifact Signing Certificate Profile Signer**
 role (formerly Trusted Signing Certificate Profile Signer; Microsoft renamed
 Trusted Signing to Artifact Signing) on the certificate profile (Access control (IAM) on the profile or the
 account). electron-builder installs the `TrustedSigning` PowerShell module on
-the runner, signs `Layertrail.exe`, the uninstaller and the installer, and
+the runner, signs `Statekeep.exe`, the uninstaller and the installer, and
 timestamps them with `http://timestamp.acs.microsoft.com`. Client secrets
 expire, so note the expiry date and rotate the secret before it lapses.
 
@@ -124,14 +124,14 @@ not signed. Without it, Windows builds stay unsigned and are not enforced.
 
    ```bash
    git checkout main && git pull
-   git tag -a v0.1.0-alpha.2 -m "Layertrail 0.1.0-alpha.2"
+   git tag -a v0.1.0-alpha.2 -m "Statekeep 0.1.0-alpha.2"
    git push origin v0.1.0-alpha.2
    ```
 
 4. The workflow creates a **draft** release with generated notes. Tags with a
    hyphen (`-alpha.N`, `-beta.N`) are marked as prereleases.
 5. Download the DMG on a Mac that has never run a development build, open it,
-   and launch Layertrail from Applications. Gatekeeper should open it without a
+   and launch Statekeep from Applications. Gatekeeper should open it without a
    warning. Check the Windows installer the same way, then edit the notes
    (marking the Intel Mac and Linux assets as not officially supported) and
    publish the draft. The Intel DMG and Linux assets are not tested by hand
@@ -145,6 +145,6 @@ again rather than replacing files on a published release.
 
 ## Identity
 
-The app ID is `com.makefieldworks.layertrail`. It becomes the macOS bundle
+The app ID is `com.makefieldworks.statekeep`. It becomes the macOS bundle
 identifier and seeds the Windows installer GUID, so changing it after a release
 makes macOS and Windows treat the next build as a different application.

@@ -1,11 +1,11 @@
 # Desktop Chrome Policy
 
-Layertrail uses the native operating-system frame on Windows and Linux. Those
+Statekeep uses the native operating-system frame on Windows and Linux. Those
 platforms should not reserve renderer space for macOS traffic lights, and the
 renderer should not add custom draggable titlebar regions when the native frame
 is visible.
 
-On macOS, Layertrail uses Electron's `hiddenInset` titlebar so the content can sit
+On macOS, Statekeep uses Electron's `hiddenInset` titlebar so the content can sit
 under the native traffic-light controls. The renderer reserves left padding for
 those controls and marks only the project titlebar plus a narrow empty top strip
 as draggable. Interactive controls inside the titlebar stay in `no-drag`

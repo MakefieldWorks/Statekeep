@@ -40,7 +40,7 @@
   <dialog bind:this={element} oncancel={(event) => { event.preventDefault(); if (!busy) onClose() }} aria-label="Project archives" class="max-h-[90vh] w-full max-w-lg space-y-4 overflow-auto rounded-xl bg-white p-6 text-sm text-stone-700 shadow-xl backdrop:bg-black/30" data-testid="project-archive-dialog">
     <h2 class="text-lg font-semibold">Project archives</h2>
     <p>Keep a portable copy of current inventory, snapshots, history records, and saved recovery files. Current unsaved inventory edits are included when exporting.</p>
-    <p>Search indexes rebuild on open. Session Undo/Redo, Git settings, hooks, remotes, other branches, and files outside Layertrail’s history records are excluded.</p>
+    <p>Search indexes rebuild on open. Session Undo/Redo, Git settings, hooks, remotes, other branches, and files outside Statekeep’s history records are excluded.</p>
     {#if error}<p role="alert" class="text-red-700">{error}</p>{/if}
     {#if message}<p role="status" class="break-words rounded bg-emerald-50 p-3 selectable">{message}</p>{/if}
     <div class="flex gap-2">

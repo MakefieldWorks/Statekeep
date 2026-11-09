@@ -229,7 +229,7 @@ export function collectProjectWarnings(projectPath: string): ProjectWarning[] {
   return [{
     code: 'CLOUD_SYNC_PROJECT',
     title: `Project is inside ${cloudPath.provider}`,
-    message: 'Cloud sync can corrupt Layertrail search/history indexes because SQLite WAL files must stay in lockstep. Keep Layertrail projects in a local folder and back up/export snapshots separately.',
+    message: 'Cloud sync can corrupt Statekeep search/history indexes because SQLite WAL files must stay in lockstep. Keep Statekeep projects in a local folder and back up/export snapshots separately.',
     provider: cloudPath.provider,
     path: projectPath,
   }]

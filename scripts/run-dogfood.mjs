@@ -49,13 +49,13 @@ if (!existsSync(projectPath)) {
 function packagedExecutablePath() {
   if (process.platform === 'darwin') {
     const macDir = process.arch === 'arm64' ? 'mac-arm64' : 'mac'
-    return join(ROOT_DIR, 'dist', macDir, 'Layertrail.app', 'Contents', 'MacOS', 'Layertrail')
+    return join(ROOT_DIR, 'dist', macDir, 'Statekeep.app', 'Contents', 'MacOS', 'Statekeep')
   }
   if (process.platform === 'win32') {
-    return join(ROOT_DIR, 'dist', 'win-unpacked', 'Layertrail.exe')
+    return join(ROOT_DIR, 'dist', 'win-unpacked', 'Statekeep.exe')
   }
   if (process.platform === 'linux') {
-    return join(ROOT_DIR, 'dist', 'linux-unpacked', 'layertrail')
+    return join(ROOT_DIR, 'dist', 'linux-unpacked', 'statekeep')
   }
   console.error(`Packaged dogfood launch is supported on macOS, Windows, and Linux, not ${process.platform}.`)
   usage()
@@ -64,13 +64,13 @@ function packagedExecutablePath() {
 
 const packagedExecutable = args.packaged ? packagedExecutablePath() : ''
 if (packagedExecutable && !existsSync(packagedExecutable)) {
-  console.error(`Packaged Layertrail executable does not exist: ${packagedExecutable}`)
+  console.error(`Packaged Statekeep executable does not exist: ${packagedExecutable}`)
   process.exit(1)
 }
 
-const dogfoodEnv = { ...process.env, LAYERTRAIL_DOGFOOD_PROJECT: projectPath }
-if (packagedExecutable) dogfoodEnv.LAYERTRAIL_DOGFOOD_EXECUTABLE = packagedExecutable
-else delete dogfoodEnv.LAYERTRAIL_DOGFOOD_EXECUTABLE
+const dogfoodEnv = { ...process.env, STATEKEEP_DOGFOOD_PROJECT: projectPath }
+if (packagedExecutable) dogfoodEnv.STATEKEEP_DOGFOOD_EXECUTABLE = packagedExecutable
+else delete dogfoodEnv.STATEKEEP_DOGFOOD_EXECUTABLE
 
 execFileSync(
   join(ROOT_DIR, 'node_modules', '.bin', 'playwright'),

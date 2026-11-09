@@ -1,15 +1,15 @@
 # Reverse-DNS identity for the macOS bundle ID and the Windows installer GUID.
 # Do not change it after a release ships: macOS and Windows treat a new ID as a
 # different app.
-appId: com.makefieldworks.layertrail
-productName: Layertrail
+appId: com.makefieldworks.statekeep
+productName: Statekeep
 # One naming scheme for every release asset, with no spaces, so release pages
-# and SHA256SUMS list e.g. Layertrail-0.1.0-alpha.2-mac-arm64.dmg.
+# and SHA256SUMS list e.g. Statekeep-0.1.0-alpha.2-mac-arm64.dmg.
 artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 # better-sqlite3 ships prebuilt Node-API binaries that load in any Electron
 # version, so there is nothing to recompile while packaging.
 npmRebuild: false
-# Ad-hoc signs unsigned macOS builds; a no-op unless LAYERTRAIL_ADHOC_SIGN=1.
+# Ad-hoc signs unsigned macOS builds; a no-op unless STATEKEEP_ADHOC_SIGN=1.
 afterPack: ./scripts/adhoc-sign-mac.cjs
 # Notarizes and staples with retries; see the script for why it replaces
 # electron-builder's built-in notarize.
@@ -23,7 +23,7 @@ files:
   - out/**/*
   - package.json
   - resources/icon.png
-  # Offline Help (Help → Layertrail Help), generated from the website docs; see
+  # Offline Help (Help → Statekeep Help), generated from the website docs; see
   # docs/OFFLINE_HELP.md. Served from app.asar by src/main/help-window.ts.
   - resources/help/**/*
   # better-sqlite3 ships its C++ sources and a prebuilt binary for every
@@ -33,12 +33,12 @@ files:
   - "!node_modules/better-sqlite3/binding.gyp"
 
 fileAssociations:
-  - ext: layertrail
+  - ext: statekeep
     # Linux packages emit a shared-mime-info XML definition only when this is
     # explicit. It also becomes the desktop entry's MimeType field.
-    mimeType: application/x-layertrail
-    name: Layertrail Project
-    description: Layertrail project document
+    mimeType: application/x-statekeep
+    name: Statekeep Project
+    description: Statekeep project document
     role: Editor
 
 mac:
@@ -83,7 +83,7 @@ linux:
     - target: AppImage
       arch:
         - x64
-    # Native packages register the launcher, icon, and Layertrail project MIME
+    # Native packages register the launcher, icon, and Statekeep project MIME
     # association with the desktop environment. The AppImage remains the
     # portable option for distributions outside the supported package families.
     - target: deb

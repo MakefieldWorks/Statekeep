@@ -1,6 +1,6 @@
-# Layertrail UI Principles
+# Statekeep UI Principles
 
-Layertrail should feel like a **thoughtful modern desktop app**, not a direct visual continuation of Archon.
+Statekeep should feel like a **thoughtful modern desktop app**, not a direct visual continuation of Archon.
 
 The UI should preserve the strengths of structured editing and history awareness while becoming calmer, clearer, and more inviting.
 
@@ -27,7 +27,7 @@ Keyboard support, quick actions, and advanced panels should exist, but they shou
 
 ## Visual direction
 
-Layertrail should lean toward:
+Statekeep should lean toward:
 
 - strong typographic hierarchy
 - restrained color usage
@@ -69,7 +69,7 @@ The layout should support depth without feeling cramped.
 
 ## UX benchmark for v1
 
-A new user should be able to open Layertrail and immediately feel:
+A new user should be able to open Statekeep and immediately feel:
 
 - “I understand the shape of this app.”
 - “My work is safe here.”

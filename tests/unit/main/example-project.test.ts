@@ -18,7 +18,7 @@ let parentDir: string
 let manager: ProjectManager
 
 beforeEach(() => {
-  parentDir = join(tmpdir(), `layertrail-example-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  parentDir = join(tmpdir(), `statekeep-example-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   mkdirSync(parentDir, { recursive: true })
   manager = new ProjectManager(new GitService(noopLogger as any), noopLogger as any)
 })

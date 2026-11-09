@@ -38,9 +38,9 @@ function notarytool(args) {
 }
 
 function submit(app) {
-  const workDir = mkdtempSync(join(tmpdir(), 'layertrail-notarize-'))
+  const workDir = mkdtempSync(join(tmpdir(), 'statekeep-notarize-'))
   try {
-    const zip = join(workDir, 'Layertrail.zip')
+    const zip = join(workDir, 'Statekeep.zip')
     execFileSync('ditto', ['-c', '-k', '--sequesterRsrc', '--keepParent', app, zip])
     console.log(`  • notarizing ${app}`)
     const result = notarytool(['submit', zip, '--wait', '--timeout', '30m'])
@@ -78,7 +78,7 @@ async function staple(app) {
 }
 
 exports.default = async function notarizeMac(context) {
-  if (context.electronPlatformName !== 'darwin' || process.env.LAYERTRAIL_ADHOC_SIGN === '1') return
+  if (context.electronPlatformName !== 'darwin' || process.env.STATEKEEP_ADHOC_SIGN === '1') return
   const { APPLE_API_KEY, APPLE_API_KEY_ID, APPLE_API_ISSUER } = process.env
   if (!APPLE_API_KEY || !APPLE_API_KEY_ID || !APPLE_API_ISSUER) {
     console.log('  • skipped macOS notarization (APPLE_API_KEY, APPLE_API_KEY_ID and APPLE_API_ISSUER are not all set)')

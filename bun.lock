@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "layertrail",
+      "name": "statekeep",
       "dependencies": {
         "@tanstack/svelte-virtual": "^3.13.23",
         "better-sqlite3": "^13.0.3",

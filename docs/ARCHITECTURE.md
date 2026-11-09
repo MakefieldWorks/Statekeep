@@ -1,8 +1,8 @@
-# Layertrail Architecture (Initial Draft)
+# Statekeep Architecture (Initial Draft)
 
 ## Goals
 
-This document proposes the initial technical shape for Layertrail as a **greenfield Electron + TypeScript + Svelte 5 + Tailwind** desktop application.
+This document proposes the initial technical shape for Statekeep as a **greenfield Electron + TypeScript + Svelte 5 + Tailwind** desktop application.
 
 The goal is not to reproduce Archon’s Wails/Go architecture. The goal is to keep the strongest *concepts* while simplifying the implementation model and tightening the desktop UX.
 
@@ -23,7 +23,7 @@ The goal is not to reproduce Archon’s Wails/Go architecture. The goal is to ke
 
 ## High-level system shape
 
-Layertrail should have four explicit layers:
+Statekeep should have four explicit layers:
 
 ### 1. Main process
 Responsible for:
@@ -165,7 +165,7 @@ exists unless it's in this table. Add new channels here before implementing them
 A straightforward app layout should be enough for v1:
 
 ```text
-layertrail/
+statekeep/
   src/
     main/
     preload/
@@ -189,7 +189,7 @@ not need manager state belongs in that folder.
 
 ## Data model direction
 
-Based on Archon’s strongest ideas, Layertrail should likely preserve:
+Based on Archon’s strongest ideas, Statekeep should likely preserve:
 
 - **stable immutable IDs** for nodes
 - **sibling-local naming rules** rather than global uniqueness
@@ -200,9 +200,9 @@ Based on Archon’s strongest ideas, Layertrail should likely preserve:
 
 ```text
 myproject/
-  Layertrail.layertrail            # single canonical file, all nodes inline
+  Statekeep.statekeep              # single canonical file, all nodes inline
   .git/                            # auto-initialized, hidden behind snapshot UX
-  .layertrail/
+  .statekeep/
     index/search.db                # derived, rebuildable SQLite + FTS5
     logs/                          # structured rotating logs
 ```
@@ -218,7 +218,7 @@ if benchmarks demand it.
 - Search query: <100ms response time
 - Autosave write: <200ms for 5000 nodes
 
-**Layertrail.layertrail envelope:**
+**Statekeep.statekeep envelope:**
 
 ```json
 {
@@ -294,19 +294,19 @@ a product UX that never exposes Git directly.
 
 ### Git integration mechanics
 
-- **Auto-init:** On "Create Project," Layertrail runs `git init` in the project directory.
+- **Auto-init:** On "Create Project," Statekeep runs `git init` in the project directory.
   The `.git` directory is never shown in the UI.
 - **Snapshot creation:** User provides a name and may add an immutable description
-  of up to 2,000 characters. Layertrail stores the description in
-  `.layertrail/history.json`, then runs:
-  `git add Layertrail.layertrail && git commit -m "<name>" && git tag "snapshot/<name>"`.
+  of up to 2,000 characters. Statekeep stores the description in
+  `.statekeep/history.json`, then runs:
+  `git add Statekeep.statekeep && git commit -m "<name>" && git tag "snapshot/<name>"`.
 - **Snapshot listing:** `git tag --list "snapshot/*" --sort=-creatordate` to enumerate.
-- **Snapshot compare:** `git show snapshot/<name1>:Layertrail.layertrail` vs
-  `git show snapshot/<name2>:Layertrail.layertrail`, then run the semantic diff engine.
+- **Snapshot compare:** `git show snapshot/<name1>:Statekeep.statekeep` vs
+  `git show snapshot/<name2>:Statekeep.statekeep`, then run the semantic diff engine.
   Either side may be the `@current` sentinel ref, in which case that side is read
   from the live in-memory current project instead of git, so the user can compare
   unsnapshotted work against a snapshot without creating one first.
-- **Restore:** `git show snapshot/<name>:Layertrail.layertrail > Layertrail.layertrail` to restore
+- **Restore:** `git show snapshot/<name>:Statekeep.statekeep > Statekeep.statekeep` to restore
   a prior state (creates a new working state, does not rewrite history).
 - **Concurrency guard (UI):** Disable snapshot UI controls (create, restore) while
   any git operation is in flight. Re-enable on success or failure.
@@ -318,7 +318,7 @@ a product UX that never exposes Git directly.
 
 ### Semantic diff engine
 
-Compares two Layertrail.layertrail snapshots node-by-node using stable `id` as the join key:
+Compares two Statekeep.statekeep snapshots node-by-node using stable `id` as the join key:
 
 | Change type | Detection | Severity | Classification |
 |---|---|---|---|
@@ -393,12 +393,12 @@ inventing node rows.
 
 ### Autosave vs snapshot boundary
 
-- **Autosave** writes `Layertrail.layertrail` to disk only. No Git operations.
+- **Autosave** writes `Statekeep.statekeep` to disk only. No Git operations.
   Debounce at 2-3 seconds. Uses atomic write (temp file + rename).
 - **Snapshot** writes to disk, then runs `git add + commit + tag`.
   Only triggered by explicit user action ("Create Snapshot").
 - Between snapshots, the Git working tree is intentionally dirty.
-  `Layertrail.layertrail` on disk is always the latest state. Snapshots are
+  `Statekeep.statekeep` on disk is always the latest state. Snapshots are
   explicit named checkpoints in Git history.
 - **Snapshot flush rule:** Before any snapshot git operations, flush pending
   autosave state. Cancel the debounce timer, write current in-memory state
@@ -410,7 +410,7 @@ inventing node rows.
 
 ### Schema migration
 
-On project open, check `Layertrail.layertrail` `version` field:
+On project open, check `Statekeep.statekeep` `version` field:
 
 ```typescript
 // Migration pipeline: run sequentially, each step is lossless
@@ -481,11 +481,11 @@ so keep that script. An empty list does not work: Bun treats it as unset.
 ### Search index lifecycle
 
 - **Full rebuild:** On project open, or if `search.db` is missing/corrupt.
-  Delete and recreate from `Layertrail.layertrail`. For 5000 nodes, target <1 second.
+  Delete and recreate from `Statekeep.statekeep`. For 5000 nodes, target <1 second.
 - **Incremental sync:** On each node create/update/delete, update the
   corresponding FTS5 row. This is a single INSERT/UPDATE/DELETE per
   operation, not a full reindex.
-- **No rebuild on autosave.** Autosave writes `Layertrail.layertrail` to disk;
+- **No rebuild on autosave.** Autosave writes `Statekeep.statekeep` to disk;
   the search index is already current from incremental sync.
 
 ---
@@ -529,7 +529,7 @@ export const ErrorCode = {
 
 | Error | Rescue action | User sees |
 |---|---|---|
-| GitCorruptError | Attempt `git fsck --full`. If repairable, fix silently. If not, offer to re-init .git from current Layertrail.layertrail (loses history but preserves current state). Log full diagnostics. | "Project history may be damaged. [Repair] [Start fresh history]" |
+| GitCorruptError | Attempt `git fsck --full`. If repairable, fix silently. If not, offer to re-init .git from current Statekeep.statekeep (loses history but preserves current state). Log full diagnostics. | "Project history may be damaged. [Repair] [Start fresh history]" |
 | GitCommitError | Log stderr from Git. If auth-related, surface. If lock-related, retry once after 500ms. Otherwise show dialog with raw error. | "Could not save snapshot. [Details] [Retry]" |
 | DiffTimeoutError | Cap diff computation at 5 seconds. If exceeded, show partial results with a warning. Log the node count and elapsed time. | "Comparison is taking too long (N nodes). Showing partial results." |
 | InvalidHierarchyError | Log the specific violation (circular ref, orphaned node). Refuse to save. Show diagnostic with node IDs. | "Project structure has an error: [specific issue]. Please fix before saving." |
@@ -545,7 +545,7 @@ libraries needed.
 ### Logging
 
 - Structured JSON logs, namespaced by subsystem (e.g., `git`, `persistence`, `diff`, `search`)
-- Rotating file logs in `.layertrail/logs/`, max 5 files x 5MB each
+- Rotating file logs in `.statekeep/logs/`, max 5 files x 5MB each
 - Log levels: error, warn, info, debug
 - Every rescued error logs: what was attempted, with what arguments, what failed, what recovery was taken
 - Logs are never shown in the UI by default but are accessible via a "Show Logs" developer menu item
@@ -568,7 +568,7 @@ tests/
     shared/     # validation, diff-engine, migration
     main/       # project-manager, git-service, search-index
   e2e/          # full user flows via Playwright
-  fixtures/     # sample Layertrail.layertrail files for testing
+  fixtures/     # sample Statekeep.statekeep files for testing
 ```
 
 ### Coverage targets per phase
@@ -632,7 +632,7 @@ exec(`git tag "snapshot/${name}"`, { cwd: projectDir })
 - No `remote` module usage
 - Content Security Policy: restrict to `self` only, no external resource loading
 
-### Layertrail.json parsing
+### Statekeep.json parsing
 
 - Use `JSON.parse` with a size check first (reject files > 50MB)
 - Validate schema version before processing nodes
@@ -677,7 +677,7 @@ CI/CD pipeline (GitHub Actions) deferred until Phase 1 is functional.
 
 ## Plugin/integration stance
 
-Archon’s plugin taxonomy is strong, but Layertrail should be much more conservative early on.
+Archon’s plugin taxonomy is strong, but Statekeep should be much more conservative early on.
 
 ### Recommendation
 
@@ -689,7 +689,7 @@ Archon’s plugin taxonomy is strong, but Layertrail should be much more conserv
 
 ## Key architecture decisions to hold for now
 
-1. **Layertrail is local-first.**
+1. **Statekeep is local-first.**
 2. **The renderer never talks directly to the filesystem.**
 3. **Project data stays inspectable on disk.**
 4. **The search index is rebuildable and non-authoritative.**
@@ -702,7 +702,7 @@ Archon’s plugin taxonomy is strong, but Layertrail should be much more conserv
 
 Resolved:
 1. ~~Git?~~ Required, hidden behind snapshot UX. System Git CLI only.
-2. ~~Sharded vs single file?~~ Single Layertrail.layertrail. Sharding earned later.
+2. ~~Sharded vs single file?~~ Single Statekeep.statekeep. Sharding earned later.
 3. ~~Thinnest diff?~~ Node add/remove/move/rename + property changes + order changes.
 
 Still open:

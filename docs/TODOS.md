@@ -1,4 +1,4 @@
-# Layertrail TODOS
+# Statekeep TODOS
 
 ## P1 — Must do in Phase 2
 
@@ -23,9 +23,9 @@ Deferred work from CEO review (2026-04-07).
 
 ### CSV/JSON Import MVP
 **Status:** DONE — CSV imports support preview, mapping, hierarchy paths, validation, typed coercion, update-on-key, and summary reporting. NetBox dumpdata JSON also has a dedicated import path.
-**What:** Add a small import path for existing structured data into Layertrail hierarchies.
+**What:** Add a small import path for existing structured data into Statekeep hierarchies.
 **Why:** Manual entry is likely the biggest adoption barrier for pilot users with existing spreadsheets or exported datasets.
-**Pros:** Converts Layertrail from an empty editor into a migration-friendly tool. Creates a practical reason to pilot the product.
+**Pros:** Converts Statekeep from an empty editor into a migration-friendly tool. Creates a practical reason to pilot the product.
 **Cons:** Column mapping and parent-child inference can grow quickly; start with a constrained MVP informed by dogfood fixtures.
 **Effort:** M (human) -> S (CC+gstack)
 **Priority:** P1.5

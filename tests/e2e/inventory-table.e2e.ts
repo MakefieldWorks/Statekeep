@@ -11,7 +11,7 @@ test('table view sorts, selects columns, preserves node identity, and exports th
 }, testInfo) => {
   const projectDir = join(workspaceDir, 'Inventory Table Lab')
   mkdirSync(projectDir)
-  writeFileSync(join(projectDir, 'Layertrail.layertrail'), JSON.stringify({
+  writeFileSync(join(projectDir, 'Statekeep.statekeep'), JSON.stringify({
     version: 2,
     id: 'table-lab',
     name: 'Inventory Table Lab',

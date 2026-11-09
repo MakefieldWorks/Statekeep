@@ -36,10 +36,10 @@
 >
   <div class="flex items-center gap-3 [-webkit-app-region:no-drag]">
     <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-stone-50 ring-1 ring-stone-200">
-      <img src={brandMark} alt="Layertrail logo" class="h-5 w-5" />
+      <img src={brandMark} alt="Statekeep logo" class="h-5 w-5" />
     </div>
     <div class="flex flex-col">
-      <span class="text-[10px] font-semibold uppercase tracking-[0.18em] text-stone-400">Layertrail</span>
+      <span class="text-[10px] font-semibold uppercase tracking-[0.18em] text-stone-400">Statekeep</span>
       <span class="text-sm font-semibold text-stone-800">{projectName}</span>
       <span class="text-xs text-stone-400">{nodeCount} nodes</span>
     </div>

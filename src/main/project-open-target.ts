@@ -6,7 +6,7 @@ import { findProjectDocument, PROJECT_DOCUMENT_EXTENSION } from './project-docum
 
 /**
  * Resolves a path the user asked to open (a project folder or its
- * Layertrail.layertrail document) to the project folder.
+ * Statekeep.statekeep document) to the project folder.
  */
 export function resolveProjectOpenTarget(targetPath: string): Result<string> {
   try {
@@ -30,7 +30,7 @@ export function resolveProjectOpenTarget(targetPath: string): Result<string> {
 
     return err(
       ErrorCode.PROJECT_NOT_FOUND,
-      `Cannot open ${targetPath}: expected a Layertrail project folder or .layertrail file`
+      `Cannot open ${targetPath}: expected a Statekeep project folder or .statekeep file`
     )
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e)
@@ -40,7 +40,7 @@ export function resolveProjectOpenTarget(targetPath: string): Result<string> {
 
 function validateProjectDirectory(projectPath: string): Result<string> {
   if (!findProjectDocument(projectPath)) {
-    return err(ErrorCode.PROJECT_NOT_FOUND, `Cannot open ${projectPath}: no Layertrail project document was found`)
+    return err(ErrorCode.PROJECT_NOT_FOUND, `Cannot open ${projectPath}: no Statekeep project document was found`)
   }
   return ok(projectPath)
 }

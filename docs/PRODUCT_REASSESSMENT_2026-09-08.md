@@ -1,4 +1,4 @@
-# Layertrail product reassessment — September 8, 2026
+# Statekeep product reassessment — September 8, 2026
 
 Status: proposed direction, grounded in the current repository and GitHub backlog. This assessment does not change the product contract or authorize implementation of every candidate below.
 
@@ -25,7 +25,7 @@ never deletes unrelated files.
 
 ## Recommendation
 
-Layertrail has the foundation of a useful configuration-history product. Its next milestone should complete the daily workflow for someone maintaining a real lab: bring in inventory, maintain it efficiently, record a meaningful configuration, investigate a failure, recover safely, and hand the evidence to another person.
+Statekeep has the foundation of a useful configuration-history product. Its next milestone should complete the daily workflow for someone maintaining a real lab: bring in inventory, maintain it efficiently, record a meaningful configuration, investigate a failure, recover safely, and hand the evidence to another person.
 
 Keep the primary audience in `PRODUCT.md`: lab and test-facility operations leads. This is a documented target, not proof of customer demand. No new user interviews or usage evidence were supplied for this assessment. Broader audiences should remain secondary until actual use supports expanding scope.
 
@@ -91,11 +91,11 @@ First add an optional description at snapshot creation. Recommend optional field
 
 Then make it easy to compare a selected room/rack/device against a chosen baseline and export a review containing the scope, before/after values, relevant dependencies and the user's explanation. Existing Markdown/CSV reports should be extended, not rebuilt. A standalone HTML report would provide a useful next sharing format.
 
-Acceptance: someone who did not perform the changes can read the report and understand the configuration, changes and stated result without opening Layertrail. Observed differences must never be presented as proof of what caused a test failure.
+Acceptance: someone who did not perform the changes can read the report and understand the configuration, changes and stated result without opening Statekeep. Observed differences must never be presented as proof of what caused a test failure.
 
 ### 4. Complete the ownership and recovery promise
 
-The readable project document contains current state. History also relies on `.git` and `.layertrail/history.json`; recovery payloads live in `.layertrail/recovery`. Copying only the document does not preserve the complete project story. Cloud-folder detection warns about SQLite sync hazards but does not provide backup or synchronization.
+The readable project document contains current state. History also relies on `.git` and `.statekeep/history.json`; recovery payloads live in `.statekeep/recovery`. Copying only the document does not preserve the complete project story. Cloud-folder detection warns about SQLite sync hazards but does not provide backup or synchronization.
 
 Add a first-class portable archive and restore flow: capture a consistent current state plus snapshot data, timeline metadata and retained recovery points; exclude rebuildable indexes; verify integrity before restoring into a separate destination. Test restoration onto a clean machine.
 
@@ -134,7 +134,7 @@ Backup/recovery and release work should accompany feature milestones rather than
 - Full attachment management, relationship graph canvas, multi-window workspaces and notification systems: useful candidates, but not prerequisites for the central workflow. Start with evidence links and navigable references.
 - Fractional ordering and major framework/service rewrites: measure actual performance before changing the model. Virtualization does not prove that import, serialization, comparison or history indexing scales adequately.
 
-Alternative directions considered: finish every desktop-polish ticket first, or broaden Layertrail into a general project platform. The recommended workflow sequence wins because it directly improves the documented lab job while preserving the existing architecture. Release blockers still gate public distribution.
+Alternative directions considered: finish every desktop-polish ticket first, or broaden Statekeep into a general project platform. The recommended workflow sequence wins because it directly improves the documented lab job while preserving the existing architecture. Release blockers still gate public distribution.
 
 ## Repair the planning trail
 
@@ -148,7 +148,7 @@ The scattered status documents help explain why progress is hard to reconstruct:
 
 Use one current roadmap with a verified capability inventory and milestone links. Keep GitHub issues as executable work items; archive historical plans with an explicit status. This assessment is a proposal, so those existing documents and issues have not been overwritten or closed.
 
-Existing release work to retain: [signing and notarization #47](https://github.com/MakefieldWorks/Layertrail/issues/47), [update flow #48](https://github.com/MakefieldWorks/Layertrail/issues/48), [accessibility #53](https://github.com/MakefieldWorks/Layertrail/issues/53), [packaged QA #55](https://github.com/MakefieldWorks/Layertrail/issues/55), and [offline help #65](https://github.com/MakefieldWorks/Layertrail/issues/65). A documented manual/offline update path may be sufficient initially; automatic updates are not inherently required.
+Existing release work to retain: [signing and notarization #47](https://github.com/MakefieldWorks/Statekeep/issues/47), [update flow #48](https://github.com/MakefieldWorks/Statekeep/issues/48), [accessibility #53](https://github.com/MakefieldWorks/Statekeep/issues/53), [packaged QA #55](https://github.com/MakefieldWorks/Statekeep/issues/55), and [offline help #65](https://github.com/MakefieldWorks/Statekeep/issues/65). A documented manual/offline update path may be sufficient initially; automatic updates are not inherently required.
 
 ## Verification and limits
 

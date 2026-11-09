@@ -90,7 +90,7 @@ function createWindow(): BrowserWindow {
     minWidth: 900,
     minHeight: 600,
     show: false,
-    title: 'Layertrail',
+    title: 'Statekeep',
     icon: iconPath,
     backgroundColor: windowBackgroundColor(),
     titleBarStyle: desktopChrome.titleBarStyle,
@@ -169,7 +169,7 @@ function createSettingsWindow(): BrowserWindow {
     maximizable: false,
     fullscreenable: false,
     show: false,
-    title: 'Layertrail Settings',
+    title: 'Statekeep Settings',
     icon: getBrandIconPath(),
     backgroundColor: windowBackgroundColor(),
     titleBarStyle: desktopChrome.titleBarStyle,
@@ -284,8 +284,8 @@ function registerIpcHandlers(): void {
       const project = projectManager.getCurrent()
       if (!project) return err(ErrorCode.PROJECT_NOT_FOUND, 'No project is currently open')
       const selected = await dialog.showSaveDialog({ title: 'Export project archive',
-        defaultPath: join(app.getPath('documents'), 'Layertrail.layertrailarchive'),
-        filters: [{ name: 'Layertrail project archive', extensions: ['layertrailarchive'] }] })
+        defaultPath: join(app.getPath('documents'), 'Statekeep.statekeeparchive'),
+        filters: [{ name: 'Statekeep project archive', extensions: ['statekeeparchive'] }] })
       if (selected.canceled || !selected.filePath) return ok(null)
       if (projectManager.getCurrent()?.path !== project.path) return err(ErrorCode.VALIDATION_FAILED, 'Project changed. Export again.')
       return projectManager.exportProjectArchive(selected.filePath)
@@ -294,7 +294,7 @@ function registerIpcHandlers(): void {
   ipcMain.handle(IPC.ARCHIVE_INSPECT, async () => {
     try {
       const selected = await dialog.showOpenDialog({ title: 'Review project archive', properties: ['openFile'],
-        filters: [{ name: 'Layertrail project archive', extensions: ['layertrailarchive'] }] })
+        filters: [{ name: 'Statekeep project archive', extensions: ['statekeeparchive'] }] })
       if (selected.canceled || !selected.filePaths[0]) return ok(null)
       return projectManager.inspectProjectArchive(selected.filePaths[0])
     } catch (error) { return err(ErrorCode.ARCHIVE_FAILED, String(error)) }
@@ -323,9 +323,9 @@ function registerIpcHandlers(): void {
   })
 
   ipcMain.handle(IPC.PROJECT_OPEN_EXAMPLE, async () => {
-    const configuredDirectory = process.env['LAYERTRAIL_EXAMPLE_PROJECTS_DIR']?.trim()
+    const configuredDirectory = process.env['STATEKEEP_EXAMPLE_PROJECTS_DIR']?.trim()
     // The example is a user-owned project, so keep it visible alongside their documents.
-    const examplesDirectory = configuredDirectory || join(app.getPath('documents'), 'Layertrail Examples')
+    const examplesDirectory = configuredDirectory || join(app.getPath('documents'), 'Statekeep Examples')
     const result = await openExampleProject(projectManager, examplesDirectory)
     trackRecentProject(result)
     return result
@@ -658,7 +658,7 @@ app.whenReady().then(async () => {
     await dialog.showMessageBox({
       type: 'error',
       title: 'Git Not Found',
-      message: 'Layertrail requires Git to manage project history.',
+      message: 'Statekeep requires Git to manage project history.',
       detail: getGitInstallInstructions(),
       buttons: ['OK'],
     })
@@ -667,7 +667,7 @@ app.whenReady().then(async () => {
     const { response } = await dialog.showMessageBox({
       type: 'warning',
       title: 'Git Version Too Old',
-      message: `Layertrail requires Git ${gitStatus.minimumVersion}+`,
+      message: `Statekeep requires Git ${gitStatus.minimumVersion}+`,
       detail: `Found Git ${gitStatus.version}. Some features may not work correctly. Please update Git.`,
       buttons: ['Continue Anyway', 'Quit'],
       defaultId: 0,
@@ -683,7 +683,7 @@ app.whenReady().then(async () => {
   installApplicationMenu({
     platform: process.platform,
     isDev: Boolean(process.env['ELECTRON_RENDERER_URL']),
-    appName: app.name || 'Layertrail',
+    appName: app.name || 'Statekeep',
     logsPath: logDir,
     logger: appLogger,
     recentProjects: recentProjects.all(),
@@ -767,10 +767,10 @@ function getBrandIconPath(): string | undefined {
 
 function configureAboutPanel(iconPath: string | undefined): void {
   app.setAboutPanelOptions({
-    applicationName: app.name || 'Layertrail',
+    applicationName: app.name || 'Statekeep',
     applicationVersion: app.getVersion(),
     version: app.getVersion(),
-    copyright: `Copyright © ${new Date().getFullYear()} Layertrail contributors`,
+    copyright: `Copyright © ${new Date().getFullYear()} Statekeep contributors`,
     website: WEBSITE_URL,
     iconPath,
   })
@@ -957,7 +957,7 @@ async function showHelpUnavailable(): Promise<void> {
   const options: Electron.MessageBoxOptions = {
     type: 'warning',
     title: 'Help Not Available',
-    message: 'This copy of Layertrail does not include its offline Help.',
+    message: 'This copy of Statekeep does not include its offline Help.',
     detail: `The same documentation is online at:\n${DOCUMENTATION_URL}`,
     buttons: ['Open Online Documentation', 'Close'],
     defaultId: 0,
@@ -977,8 +977,8 @@ async function openOnlineDocumentation(): Promise<void> {
     await showMessageBoxSafely('online documentation error dialog', mainWindow ?? BrowserWindow.getFocusedWindow(), {
       type: 'error',
       title: 'Could Not Open Documentation',
-      message: 'Layertrail could not open the online documentation in your browser.',
-      detail: `Open this address in a browser:\n${DOCUMENTATION_URL}\n\nHelp → Layertrail Help has the same documentation and works without internet access.`,
+      message: 'Statekeep could not open the online documentation in your browser.',
+      detail: `Open this address in a browser:\n${DOCUMENTATION_URL}\n\nHelp → Statekeep Help has the same documentation and works without internet access.`,
       buttons: ['OK'],
     })
   }
@@ -993,7 +993,7 @@ async function openReleasesPage(): Promise<void> {
     await showMessageBoxSafely('releases page error dialog', mainWindow ?? BrowserWindow.getFocusedWindow(), {
       type: 'error',
       title: 'Could Not Open Releases',
-      message: 'Layertrail could not open the releases page in your browser.',
+      message: 'Statekeep could not open the releases page in your browser.',
       detail: `Open this address in a browser to view available releases:\n${RELEASES_URL}\n\nYour local projects can still be used without internet access.`,
       buttons: ['OK'],
     })
@@ -1020,7 +1020,7 @@ async function reportIssue(): Promise<void> {
   await showMessageBoxSafely('issue report error dialog', mainWindow ?? BrowserWindow.getFocusedWindow(), {
     type: 'error',
     title: 'Could Not Open Issue Form',
-    message: 'Layertrail could not open the issue form in your browser.',
+    message: 'Statekeep could not open the issue form in your browser.',
     detail: [
       `Open this address in a browser to report an issue:\n${REPORT_ISSUE_URL}`,
       copied
@@ -1039,7 +1039,7 @@ function copyDiagnostics(): void {
 
 async function collectDiagnostics(): Promise<string> {
   return buildDiagnostics({
-    appName: app.name || 'Layertrail',
+    appName: app.name || 'Statekeep',
     appVersion: app.getVersion(),
     platform: process.platform,
     arch: process.arch,

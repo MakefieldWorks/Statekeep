@@ -4,7 +4,7 @@ import { buildDiagnostics } from '../../../src/main/diagnostics'
 describe('buildDiagnostics', () => {
   it('includes app, runtime, git, project, and path details', () => {
     const diagnostics = buildDiagnostics({
-      appName: 'Layertrail',
+      appName: 'Statekeep',
       appVersion: '0.1.0',
       platform: 'darwin',
       arch: 'arm64',
@@ -22,7 +22,7 @@ describe('buildDiagnostics', () => {
       userDataPath: '/tmp/userData',
     })
 
-    expect(diagnostics).toContain('Layertrail diagnostics')
+    expect(diagnostics).toContain('Statekeep diagnostics')
     expect(diagnostics).toContain('App version: 0.1.0')
     expect(diagnostics).toContain('Platform: darwin arm64')
     expect(diagnostics).toContain('Git: 2.50.0 (meets minimum)')
@@ -32,7 +32,7 @@ describe('buildDiagnostics', () => {
 
   it('reports unavailable Git and no open project clearly', () => {
     const diagnostics = buildDiagnostics({
-      appName: 'Layertrail',
+      appName: 'Statekeep',
       appVersion: '0.1.0',
       platform: 'linux',
       arch: 'x64',

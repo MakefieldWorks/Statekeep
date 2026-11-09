@@ -1,6 +1,6 @@
-# Layertrail Product Usage Model
+# Statekeep Product Usage Model
 
-This document describes how people should understand and use Layertrail. It is
+This document describes how people should understand and use Statekeep. It is
 intended to settle product semantics before we keep refining UI labels.
 
 The central question is:
@@ -10,11 +10,11 @@ The central question is:
 
 ## Product Thesis
 
-Layertrail is for people managing structured information that changes over time.
+Statekeep is for people managing structured information that changes over time.
 The hierarchy is the current model of the thing they care about. Snapshots are
 named evidence of what that model looked like at meaningful moments.
 
-Layertrail should help users:
+Statekeep should help users:
 
 - model a structured project without forcing a rigid schema up front
 - make changes freely in the current project
@@ -24,7 +24,7 @@ Layertrail should help users:
 
 ## Core Concepts
 
-Layertrail should be explained with three product nouns:
+Statekeep should be explained with three product nouns:
 
 1. **Current Project**
 2. **Immutable Snapshot Timeline**
@@ -35,11 +35,11 @@ mental model.
 
 ### Current Project
 
-The current project is the only editable thing in Layertrail. It is what the user
+The current project is the only editable thing in Statekeep. It is what the user
 sees in the tree and detail pane during normal use.
 
-The current project is autosaved to `Layertrail.layertrail`. It can be changed freely.
-When the user creates a snapshot, Layertrail records the current project state as
+The current project is autosaved to `Statekeep.statekeep`. It can be changed freely.
+When the user creates a snapshot, Statekeep records the current project state as
 an immutable checkpoint. The user may add an optional description of up to 2,000
 characters for the reason, test/run ID, outcome, or supporting evidence. That
 description is immutable context for the checkpoint.
@@ -99,7 +99,7 @@ Most users should primarily see the event timeline because it matches how they
 describe work later: "we upgraded software, the test failed, we reverted to the
 previous config, then tried a different change."
 
-Content lineage is still important for provenance. Layertrail should record it so
+Content lineage is still important for provenance. Statekeep should record it so
 users can answer questions like "was D based on B or C?" without exposing Git
 branches as a primary concept.
 
@@ -170,7 +170,7 @@ B because the current project was reverted to B before D was created.
 
 ```mermaid
 flowchart TD
-  A["User edits current project"] --> B["Autosave writes Layertrail.layertrail"]
+  A["User edits current project"] --> B["Autosave writes Statekeep.statekeep"]
   B --> C{"Meaningful checkpoint?"}
   C -- "No" --> A
   C -- "Yes" --> D["Create immutable snapshot"]
@@ -192,8 +192,8 @@ flowchart TD
 devices. Their team frequently updates firmware, swaps hardware, and needs an
 audit trail.
 
-**Why Layertrail:** Spreadsheets flatten the structure. Git is too technical.
-Layertrail gives Morgan a hierarchy plus named checkpoints.
+**Why Statekeep:** Spreadsheets flatten the structure. Git is too technical.
+Statekeep gives Morgan a hierarchy plus named checkpoints.
 
 **Typical flow:**
 
@@ -238,8 +238,8 @@ sequenceDiagram
 **Context:** Priya maintains a structured research plan: themes, questions,
 interviews, findings, and decisions. The plan evolves as evidence comes in.
 
-**Why Layertrail:** A document is too linear. A project-management tool is too
-process-heavy. Layertrail lets Priya structure information and understand how the
+**Why Statekeep:** A document is too linear. A project-management tool is too
+process-heavy. Statekeep lets Priya structure information and understand how the
 research model changed.
 
 **Typical flow:**
@@ -260,7 +260,7 @@ plan look like an earlier plan without changing the earlier snapshot.
 **Context:** Alex models a system architecture as services, interfaces,
 deployment environments, risks, and ownership.
 
-**Why Layertrail:** Architecture changes are structural. Alex needs to know what
+**Why Statekeep:** Architecture changes are structural. Alex needs to know what
 moved, what was renamed, and which properties changed across proposals.
 
 **Typical flow:**
@@ -274,15 +274,15 @@ moved, what was renamed, and which properties changed across proposals.
    `current-production` and try a different proposal.
 
 **Important semantic:** Multiple proposals can branch from the same snapshot as
-content lineage, even though Layertrail does not expose Git branching as the main
+content lineage, even though Statekeep does not expose Git branching as the main
 user concept.
 
 ### 4. Solo Builder
 
-**Context:** Casey uses Layertrail to plan a product: features, screens, user
+**Context:** Casey uses Statekeep to plan a product: features, screens, user
 flows, risks, and release tasks.
 
-**Why Layertrail:** Casey wants structure and history without running a full
+**Why Statekeep:** Casey wants structure and history without running a full
 project-management system.
 
 **Typical flow:**
@@ -303,7 +303,7 @@ Because revert is not "edit a snapshot." Revert makes the current project look
 like a snapshot, records that action, and lets the user move forward from a
 known-good state.
 
-The safety requirement is provenance: Layertrail must preserve the later snapshot
+The safety requirement is provenance: Statekeep must preserve the later snapshot
 that motivated the revert, such as C in the lab example, and record that the
 next snapshot was based on the reverted snapshot, such as D being based on B.
 
@@ -330,7 +330,7 @@ answer "what did this state come from?"
 
 ### Safety Snapshot Before Revert
 
-Before replacing the current project during revert, Layertrail should preserve
+Before replacing the current project during revert, Statekeep should preserve
 unsnapshotted current work automatically. This is not optional in v1.
 
 If the current project has unsnapshotted changes, revert should first create an
@@ -390,22 +390,22 @@ These are the decisions implied by the current model:
 | Does revert rewrite history? | No. It changes the current project and appends a revert event. |
 | Can users create a new snapshot after revert and edits? | Yes. That records a new point in time with explicit provenance. |
 | Is the snapshot timeline linear? | Yes. The event log is chronological and append-only. |
-| Is content lineage always linear? | No. Revert-then-edit can fork content lineage, and Layertrail should record that honestly. |
+| Is content lineage always linear? | No. Revert-then-edit can fork content lineage, and Statekeep should record that honestly. |
 | Should revert preserve unsnapshotted current work automatically? | Yes. Create an automatic safety snapshot or equivalent immutable recovery point before replacing the current project. |
 | Are automatic safety captures first-class timeline snapshots? | No. Store them as recovery points referenced by revert events, visible on demand. |
 | Should revert require a note? | Required when reverting past existing later snapshots; optional when reverting only unsnapshotted current work. |
 | Should the product use "snapshot," "checkpoint," or "version"? | Use "snapshot." Avoid "version" because it implies editable or branching versions. |
 | Should compare mode allow edits? | No. Compare is read-only. |
-| Should Layertrail support comparing the current project to a snapshot in v1? | Yes. Shipped: a `Current project` compare option lets the user diff their live, unsnapshotted work against any saved snapshot ("what changed since my last snapshot?") without creating a throwaway snapshot. |
+| Should Statekeep support comparing the current project to a snapshot in v1? | Yes. Shipped: a `Current project` compare option lets the user diff their live, unsnapshotted work against any saved snapshot ("what changed since my last snapshot?") without creating a throwaway snapshot. |
 | Should snapshot creation require a note/description beyond the name? | No. Shipped: an optional immutable description appears in timeline, compare, node history, and exported reports. |
-| Should Layertrail expose Git branches? | Not in v1. The product can record lineage without making users manage branches. |
+| Should Statekeep expose Git branches? | Not in v1. The product can record lineage without making users manage branches. |
 
 ## Open Product Questions
 
 These should be decided before adding heavier history features:
 
 - Should users be able to duplicate a snapshot into a separate project later?
-- Should Layertrail expose content lineage as a separate view, or only as metadata
+- Should Statekeep expose content lineage as a separate view, or only as metadata
   inside the chronological timeline?
 
 ## Recommended v1 Language

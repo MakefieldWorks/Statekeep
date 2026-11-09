@@ -8,7 +8,7 @@ import path from 'path'
 // A privileged, standard scheme gives the bundle a real origin, so Astro's
 // root-relative URLs (/_astro/..., /docs/...) resolve, and fetch, module
 // scripts, and Pagefind's WebAssembly search work as they do on the website.
-export const HELP_SCHEME = 'layertrail-help'
+export const HELP_SCHEME = 'statekeep-help'
 export const HELP_HOST = 'help'
 export const HELP_ORIGIN = `${HELP_SCHEME}://${HELP_HOST}`
 export const HELP_INFO_FILE = 'offline-help.json'
@@ -74,7 +74,7 @@ export function helpUrl(pathname: string): string {
 }
 
 /**
- * Maps a layertrail-help:// URL to a file inside the bundle, or null when the
+ * Maps a statekeep-help:// URL to a file inside the bundle, or null when the
  * URL is for another scheme or host, is malformed, or would leave the bundle.
  * Directory URLs map to their index.html.
  */

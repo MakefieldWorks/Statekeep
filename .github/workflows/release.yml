@@ -114,7 +114,7 @@ jobs:
               # electron-builder pick up whatever identity the runner has.
               # Ad-hoc sign instead, so the dry-run app still launches after
               # the tester approves it with Open Anyway.
-              export CSC_IDENTITY_AUTO_DISCOVERY=false LAYERTRAIL_ADHOC_SIGN=1
+              export CSC_IDENTITY_AUTO_DISCOVERY=false STATEKEEP_ADHOC_SIGN=1
               args+=(-c.mac.identity=null)
             fi
             if [ "$HAS_NOTARY_KEY" = true ]; then
@@ -168,11 +168,11 @@ jobs:
         with:
           name: release-${{ matrix.os }}
           path: |
-            dist/Layertrail-*.dmg
-            dist/Layertrail-*.exe
-            dist/Layertrail-*.AppImage
-            dist/Layertrail-*.deb
-            dist/Layertrail-*.rpm
+            dist/Statekeep-*.dmg
+            dist/Statekeep-*.exe
+            dist/Statekeep-*.AppImage
+            dist/Statekeep-*.deb
+            dist/Statekeep-*.rpm
             dist/SHA256SUMS-*.txt
           if-no-files-found: error
           retention-days: 14
@@ -204,7 +204,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          flags=(--draft --verify-tag --generate-notes --title "Layertrail $GITHUB_REF_NAME")
+          flags=(--draft --verify-tag --generate-notes --title "Statekeep $GITHUB_REF_NAME")
           case "$GITHUB_REF_NAME" in
             *-*) flags+=(--prerelease) ;;
           esac

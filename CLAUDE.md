@@ -1,8 +1,8 @@
-# Layertrail — Claude Code Instructions
+# Statekeep — Claude Code Instructions
 
 ## Project
 
-Layertrail is a local-first desktop app for structured project management.
+Statekeep is a local-first desktop app for structured project management.
 Electron + TypeScript + Svelte 5 + Tailwind + electron-vite.
 
 See `docs/ARCHITECTURE.md` for the full technical spec.
@@ -64,4 +64,4 @@ making Windows/macOS opt-in only via a PR label (e.g. `ci:full`) — see
   itself the bottleneck, self-hosted runners are the next lever — but they
   are registered per-repo, not shared. `vpp3_electron`'s runners
   (`mac-mini-always-on`, `XIDAX`) are scoped to that repo only and cannot be
-  pointed at Layertrail; a separate registration would be needed here.
+  pointed at Statekeep; a separate registration would be needed here.

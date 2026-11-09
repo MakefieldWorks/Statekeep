@@ -1,9 +1,9 @@
 {
-  "name": "layertrail",
+  "name": "statekeep",
   "version": "0.1.0-alpha.2",
   "description": "Local-first desktop app for structured project management",
   "author": "MakefieldWorks",
-  "homepage": "https://github.com/MakefieldWorks/Layertrail",
+  "homepage": "https://github.com/MakefieldWorks/Statekeep",
   "main": "out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",

@@ -20,7 +20,7 @@ let tmpDir: string
 let manager: ProjectManager
 
 beforeEach(async () => {
-  tmpDir = join(tmpdir(), `layertrail-nh-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  tmpDir = join(tmpdir(), `statekeep-nh-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   mkdirSync(tmpDir, { recursive: true })
   const git = new GitService(noopLogger as any)
   manager = new ProjectManager(git, noopLogger as any)
@@ -54,7 +54,7 @@ describe('nodeHistory IPC', () => {
     manager.nodeCreate(rootId, 'Switch')
     await manager.snapshotCreate('s2')
 
-    const db = new Database(join(tmpDir, 'NodeHistory Project', '.layertrail', 'index', 'history.db'))
+    const db = new Database(join(tmpDir, 'NodeHistory Project', '.statekeep', 'index', 'history.db'))
     try {
       db.prepare(`UPDATE snapshot_index_state SET complete=0 WHERE snapshot_id='s2'`).run()
     } finally {
@@ -280,7 +280,7 @@ describe('nodeHistory IPC', () => {
     await manager.flushAndClose()
 
     const Database = (await import('better-sqlite3')).default
-    const dbPath = join(projectPath, '.layertrail', 'index', 'history.db')
+    const dbPath = join(projectPath, '.statekeep', 'index', 'history.db')
     const db = new Database(dbPath)
     try {
       db.exec('DELETE FROM node_history; DELETE FROM snapshot_index_state;')
@@ -337,8 +337,8 @@ describe('nodeHistory IPC', () => {
     // The history.db rows stay. The git tags stay. Only the events go away.
     const projectPath = manager.getCurrent()!.path!
     await manager.flushAndClose()
-    rmSync(join(projectPath, '.layertrail', 'history.json'), { force: true })
-    rmSync(join(projectPath, '.layertrail', 'history.backup.json'), { force: true })
+    rmSync(join(projectPath, '.statekeep', 'history.json'), { force: true })
+    rmSync(join(projectPath, '.statekeep', 'history.backup.json'), { force: true })
 
     // Reopen with a fresh manager. nodeHistory must still produce entries
     // for the now-eventless snapshots.
@@ -366,7 +366,7 @@ describe('nodeHistory IPC', () => {
     const node = manager.getCurrent()!.nodes.find(n => n.name === 'Metadata Node')!
     await manager.snapshotCreate('metadata-snapshot', 'Evidence from run 42')
 
-    const historyPath = join(manager.getCurrent()!.path!, '.layertrail', 'history.json')
+    const historyPath = join(manager.getCurrent()!.path!, '.statekeep', 'history.json')
     const history = JSON.parse(readFileSync(historyPath, 'utf8'))
     history.events = []
     writeFileSync(historyPath, JSON.stringify(history, null, 2), 'utf8')
