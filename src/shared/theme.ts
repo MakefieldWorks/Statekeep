@@ -107,8 +107,8 @@ export interface AppearancePreference {
 
 export const DEFAULT_APPEARANCE_PREFERENCE: Readonly<AppearancePreference> = {
   mode: 'system',
-  lightThemeId: 'layertrail-light',
-  darkThemeId: 'layertrail-dark',
+  lightThemeId: 'statekeep-light',
+  darkThemeId: 'statekeep-dark',
 }
 
 const lightTokens: ThemeTokens = {
@@ -331,26 +331,26 @@ const graphiteDarkTokens: ThemeTokens = {
 
 export const BUILT_IN_THEMES: readonly ThemeDefinition[] = [
   {
-    id: 'layertrail-light',
-    label: 'Layertrail Light',
+    id: 'statekeep-light',
+    label: 'Statekeep Light',
     scheme: 'light',
     tokens: lightTokens,
   },
   {
-    id: 'layertrail-graphite-light',
-    label: 'Layertrail Graphite Light',
+    id: 'statekeep-graphite-light',
+    label: 'Statekeep Graphite Light',
     scheme: 'light',
     tokens: graphiteLightTokens,
   },
   {
-    id: 'layertrail-dark',
-    label: 'Layertrail Dark',
+    id: 'statekeep-dark',
+    label: 'Statekeep Dark',
     scheme: 'dark',
     tokens: darkTokens,
   },
   {
-    id: 'layertrail-graphite-dark',
-    label: 'Layertrail Graphite Dark',
+    id: 'statekeep-graphite-dark',
+    label: 'Statekeep Graphite Dark',
     scheme: 'dark',
     tokens: graphiteDarkTokens,
   },

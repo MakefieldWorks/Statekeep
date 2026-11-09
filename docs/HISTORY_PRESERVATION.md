@@ -1,8 +1,8 @@
 # History metadata preservation
 
 Snapshot descriptions, revert lineage, timeline events, and retained recovery
-point references live in `.layertrail/history.json`. Git tags alone cannot rebuild
-that information. Layertrail therefore preserves an existing metadata file that
+point references live in `.statekeep/history.json`. Git tags alone cannot rebuild
+that information. Statekeep therefore preserves an existing metadata file that
 cannot be read, rather than treating it as an empty history and overwriting it.
 
 Malformed JSON, unsupported versions, invalid records, and filesystem read
@@ -12,10 +12,10 @@ recovery payloads. Existing edit history remains available. Ordinary project
 editing and saving remain available.
 
 The timeline reports the affected file and offers a review of the automatic
-backup. Users can also restore a known-good file manually, or use a Layertrail
+backup. Users can also restore a known-good file manually, or use a Statekeep
 version that supports its format. Failed refreshes clear stale timeline/recovery entries
 and do not display “No snapshots yet.” Restoring valid metadata makes history
-operations available again without restarting the app. Layertrail does not
+operations available again without restarting the app. Statekeep does not
 automatically delete or reset damaged metadata.
 
 Lists and exports that require snapshot metadata report the same problem
@@ -28,7 +28,7 @@ is a different condition and is never silently treated as legacy history.
 
 ## Automatic backup and explicit restore
 
-`.layertrail/history.backup.json` holds one validated metadata copy, with its
+`.statekeep/history.backup.json` holds one validated metadata copy, with its
 project ID and save time. Existing readable metadata is backed up before a
 history operation starts. If that backup cannot be written, the operation is
 blocked before changing the project. After a successful history-operation metadata write,
@@ -77,8 +77,8 @@ the rename; file flushing alone does not guarantee crash durability.
 ## Review unlisted recovery files
 
 Once history metadata is readable, **Additional recovery files → Review recovery
-files** scans `.layertrail/recovery` without changing it. Each unlisted file is
-shown with an eligibility explanation. Layertrail accepts recognized recovery
+files** scans `.statekeep/recovery` without changing it. Each unlisted file is
+shown with an eligibility explanation. Statekeep accepts recognized recovery
 filenames containing a valid inventory for this project; malformed, foreign,
 unsupported, oversized, linked, and unrecognized files remain untouched.
 Hidden files are skipped. Each review lists at most 100 unlisted entries and
@@ -108,7 +108,7 @@ or invalid, allowing future backups to stop referencing an unusable payload.
 Retained files may appear in the next review. There is no file-deletion action.
 History metadata version 2 records the
 new reason; version 1 migrates without changing its existing records. Older
-Layertrail versions will refuse the newer history metadata.
+Statekeep versions will refuse the newer history metadata.
 
 ## Verification
 

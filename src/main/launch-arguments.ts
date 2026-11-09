@@ -7,7 +7,7 @@ export interface LaunchArgumentEnvironment {
 
 /**
  * Returns only file/folder arguments intentionally supplied to open in
- * Layertrail. Electron's default-app form is `electron <app-path> ...`, so the
+ * Statekeep. Electron's default-app form is `electron <app-path> ...`, so the
  * app path itself must never be interpreted as a project target.
  */
 export function collectProjectOpenTargets(

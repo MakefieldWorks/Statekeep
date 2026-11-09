@@ -61,7 +61,7 @@ export async function finishIfProvenComplete(
         if (history.recoveryPoints.some(point => point.id === record.targetId)) return
       }
       if (record.kind === 'history-backup-restore') {
-        const source = store.read(join(projectPath, '.layertrail', 'history.backup.json'))
+        const source = store.read(join(projectPath, '.statekeep', 'history.backup.json'))
         if (!evidence.source?.equals(source)) return
         const preservedPath = `${snapshotHistoryPath(projectPath)}.damaged-${record.id}`
         if (!record.historyMissing) {

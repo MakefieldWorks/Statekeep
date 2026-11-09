@@ -300,7 +300,7 @@
   let toastTimer:   ReturnType<typeof setTimeout> | null = null
   let unsubscribeMenuCommands: (() => void) | null = null
   let unsubscribeProjectOpenFromOs: (() => void) | null = null
-  const brandMark = './layertrail-mark.svg'
+  const brandMark = './statekeep-mark.svg'
   const desktopChrome = window.api.platform
 
   // ─── Derived ──────────────────────────────────────────────────────────────

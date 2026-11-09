@@ -6,10 +6,10 @@ continue working on another machine. Export does not create a snapshot, clear
 Undo/Redo, or rewrite history metadata. Save the archive outside the project
 folder. A failed export leaves any previous destination file intact.
 
-Choose **Archives → Review archive** from the project or welcome screen. Layertrail
+Choose **Archives → Review archive** from the project or welcome screen. Statekeep
 verifies the archive in a temporary location and shows the project name, archive
 date, and snapshot/recovery counts. **Restore into a new folder** then asks for a
-parent directory. A new `Layertrail-restored-*` folder is reserved atomically;
+parent directory. A new `Statekeep-restored-*` folder is reserved atomically;
 existing directories are never overwritten. Canceling the preview or folder
 dialog creates no restored project. Changes to an archive after review require
 another review.
@@ -24,11 +24,11 @@ node IDs; this is a restored copy, not a fork with new identities.
 
 The archive includes:
 
-- Current `Layertrail.layertrail`, serialized without runtime paths/warnings.
+- Current `Statekeep.statekeep`, serialized without runtime paths/warnings.
 - Git HEAD and all `snapshot/*` tags, with original commit IDs and timestamps.
 - Exact bytes of `history.json`, the automatic metadata backup, and preserved
   `history.json.damaged-*` files when present.
-- All regular files in `.layertrail/recovery`, including unlisted payloads.
+- All regular files in `.statekeep/recovery`, including unlisted payloads.
 
 The archive excludes derived indexes/WAL files, logs, session Undo/Redo, files
 elsewhere in the project folder, and Git settings/hooks/remotes/reflogs/stashes
@@ -46,7 +46,7 @@ primary history nor a backup remain supported.
 
 ## Format and verification
 
-Version 1 is a JSON container named `.layertrailarchive`. It has a format marker,
+Version 1 is a JSON container named `.statekeeparchive`. It has a format marker,
 format version, creation date, and an entry list. Each entry has an allowlisted
 relative path, canonical base64 bytes, and a SHA-256 checksum. No general-purpose
 extraction or compression is involved. Checksums detect corruption, not the

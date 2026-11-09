@@ -12,7 +12,7 @@ let projectPath: string
 let svc: HistoryIndexService
 
 beforeEach(() => {
-  tmpDir = join(tmpdir(), `layertrail-history-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  tmpDir = join(tmpdir(), `statekeep-history-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   mkdirSync(tmpDir, { recursive: true })
   projectPath = tmpDir
   svc = new HistoryIndexService()
@@ -48,7 +48,7 @@ describe('HistoryIndexService', () => {
   describe('schema and lifecycle', () => {
     it('creates tables and sets user_version on first open', () => {
       // svc.open already ran in beforeEach. Inspect via a direct connection.
-      const db = new Database(join(projectPath, '.layertrail', 'index', 'history.db'))
+      const db = new Database(join(projectPath, '.statekeep', 'index', 'history.db'))
       try {
         const version = db.pragma('user_version', { simple: true }) as number
         expect(version).toBe(2)
@@ -253,7 +253,7 @@ describe('HistoryIndexService', () => {
       })
 
       // Manually inject an incomplete row to simulate a torn write.
-      const db = new Database(join(projectPath, '.layertrail', 'index', 'history.db'))
+      const db = new Database(join(projectPath, '.statekeep', 'index', 'history.db'))
       try {
         db.prepare(
           `INSERT INTO snapshot_index_state (snapshot_id, expected_count, actual_count, complete)
@@ -285,7 +285,7 @@ describe('HistoryIndexService', () => {
       svc.close()
 
       // The .db file should survive.
-      expect(existsSync(join(projectPath, '.layertrail', 'index', 'history.db'))).toBe(true)
+      expect(existsSync(join(projectPath, '.statekeep', 'index', 'history.db'))).toBe(true)
 
       svc.open(projectPath)
       expect(svc.nodeHistory('root').length).toBe(1)

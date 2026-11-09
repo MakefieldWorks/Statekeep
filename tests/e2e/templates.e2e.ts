@@ -315,7 +315,7 @@ test('surfaces load-time warnings for a hand-edited invalid value', async ({
       },
     ],
   }
-  writeFileSync(join(projectDir, 'Layertrail.layertrail'), JSON.stringify(projectDoc, null, 2), 'utf8')
+  writeFileSync(join(projectDir, 'Statekeep.statekeep'), JSON.stringify(projectDoc, null, 2), 'utf8')
 
   await setDialogPath(electronApp, projectDir)
   await appPage.getByTestId('open-project-btn').click()
@@ -352,7 +352,7 @@ test('preserves a field default through a template-manager save (no data loss)',
       },
     ],
   }
-  writeFileSync(join(projectDir, 'Layertrail.layertrail'), JSON.stringify(projectDoc, null, 2), 'utf8')
+  writeFileSync(join(projectDir, 'Statekeep.statekeep'), JSON.stringify(projectDoc, null, 2), 'utf8')
 
   await setDialogPath(electronApp, projectDir)
   await appPage.getByTestId('open-project-btn').click()
@@ -401,7 +401,7 @@ test('selecting a node bound to a structurally-invalid template does not crash t
       },
     ],
   }
-  writeFileSync(join(projectDir, 'Layertrail.layertrail'), JSON.stringify(projectDoc, null, 2), 'utf8')
+  writeFileSync(join(projectDir, 'Statekeep.statekeep'), JSON.stringify(projectDoc, null, 2), 'utf8')
 
   await setDialogPath(electronApp, projectDir)
   await appPage.getByTestId('open-project-btn').click()

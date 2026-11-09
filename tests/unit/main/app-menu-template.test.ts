@@ -13,7 +13,7 @@ function templateFor(
   return buildAppMenuTemplate({
     platform,
     isDev,
-    appName: 'Layertrail',
+    appName: 'Statekeep',
     recentProjects,
     dispatch: () => {},
     openRecentProject: () => {},
@@ -58,7 +58,7 @@ describe('buildAppMenuTemplate', () => {
     const template = templateFor('darwin')
     const labels = template.map(item => item.label)
 
-    expect(labels[0]).toBe('Layertrail')
+    expect(labels[0]).toBe('Statekeep')
     expect(submenu(fileMenu(template)).some(item => item.role === 'quit')).toBe(false)
     expect(submenu(template[0]!).some(item => item.role === 'quit')).toBe(true)
     expect(submenu(template[0]!).some(item => item.label === 'Settings...')).toBe(true)
@@ -137,7 +137,7 @@ describe('buildAppMenuTemplate', () => {
     if (!helpMenu) throw new Error('Help menu not found')
 
     expect(submenu(helpMenu).map(item => item.label ?? item.role ?? item.type)).toEqual([
-      'Layertrail Help',
+      'Statekeep Help',
       'Online Documentation',
       'separator',
       'Check for Updates...',
@@ -155,7 +155,7 @@ describe('buildAppMenuTemplate', () => {
     if (!helpMenu) throw new Error('Help menu not found')
 
     expect(submenu(helpMenu).map(item => item.label ?? item.type)).toEqual([
-      'Layertrail Help',
+      'Statekeep Help',
       'Online Documentation',
       'separator',
       'Check for Updates...',

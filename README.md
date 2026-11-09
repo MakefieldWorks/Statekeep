@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="resources/layertrail.svg" alt="Layertrail logo" width="160" />
+  <img src="resources/statekeep.svg" alt="Statekeep logo" width="160" />
 </p>
 
-<h1 align="center">Layertrail</h1>
+<h1 align="center">Statekeep</h1>
 
 <p align="center">
   Local-first project structure, named snapshots, and a diff view that explains what changed.
@@ -12,21 +12,21 @@
   Built with Electron, TypeScript, Svelte 5, Tailwind, SQLite FTS5, and Git.
 </p>
 
-Layertrail is a desktop app for managing structured, hierarchical projects without hiding your data behind a service.
+Statekeep is a desktop app for managing structured, hierarchical projects without hiding your data behind a service.
 
-The core idea is simple. Your project lives as a readable `Layertrail.layertrail` file on disk. Layertrail gives you a native UI for editing that structure, saving named snapshots, searching nodes and properties, and comparing project states with semantic diffs instead of raw text churn.
+The core idea is simple. Your project lives as a readable `Statekeep.statekeep` file on disk. Statekeep gives you a native UI for editing that structure, saving named snapshots, searching nodes and properties, and comparing project states with semantic diffs instead of raw text churn.
 
-## Why Layertrail
+## Why Statekeep
 
 - Local-first. Your project data stays in your folder, under your control.
-- Human-readable storage. State is persisted to `Layertrail.layertrail`, not locked in an opaque database.
+- Human-readable storage. State is persisted to `Statekeep.statekeep`, not locked in an opaque database.
 - Named history. Snapshots are backed by Git, but surfaced as product features.
 - Semantic diffs. Compare changes like added, removed, moved, renamed, reordered, and property-changed nodes.
 - Fast search. SQLite FTS5 indexes names and properties for renderer-side search.
 
 ## Current Features
 
-- Create and open Layertrail projects from the desktop app.
+- Create and open Statekeep projects from the desktop app.
 - Manage hierarchical node trees with add, rename, delete, reorder, and move operations.
 - Duplicate a node and its descendants with a name preview, fresh IDs, and remapped internal references. Use the tree context menu, Project menu, or Cmd/Ctrl+D.
 - Select multiple visible nodes with Cmd/Ctrl-click or Shift-click, then set, add, or clear one property with a mixed-value preview and one-step Undo/Redo.
@@ -39,7 +39,7 @@ The core idea is simple. Your project lives as a readable `Layertrail.layertrail
 - Compare snapshots, or compare the current project against a snapshot, across the whole project or one selected subtree; scope and snapshot descriptions carry into the merged diff/tree view and exported Markdown, CSV, or self-contained HTML review.
 - Follow the system appearance or choose a fixed appearance plus any built-in light and dark
   scheme independently from Settings.
-- Read the user documentation offline in the app (Help → Layertrail Help), or online at [layertrail.app](https://layertrail.app); see [offline Help](docs/OFFLINE_HELP.md).
+- Read the user documentation offline in the app (Help → Statekeep Help), or online at [statekeep.app](https://statekeep.app); see [offline Help](docs/OFFLINE_HELP.md).
 - Check for updates on demand from the Help menu; see [manual update and offline installation guidance](docs/UPDATES.md).
 
 ## Stack
@@ -77,12 +77,12 @@ bun run build           # production build
 bun run test            # unit test suite
 bun run test:e2e        # Electron end-to-end tests
 bun run package         # build distributable desktop packages
-bun run generate:brand  # regenerate app/web icons from resources/layertrail.svg
+bun run generate:brand  # regenerate app/web icons from resources/statekeep.svg
 bun run generate:lab    # generate a realistic sample lab project (typed templates + snapshot timeline)
 ```
 
 On macOS, Electron E2E tests run with hidden, unfocused windows by default so
-they do not take over the desktop. Run `LAYERTRAIL_E2E_VISIBLE=1 bun run test:e2e`
+they do not take over the desktop. Run `STATEKEEP_E2E_VISIBLE=1 bun run test:e2e`
 to watch them or exercise the native focus/blur test. On Windows and Linux the
 tests show their windows by default, because hidden windows render too slowly
 for the UI tests to finish in time; on Linux without a display, wrap the run in
@@ -109,13 +109,13 @@ docs             product, architecture, and roadmap documentation
 
 ## Data Model
 
-Each Layertrail project is stored in a folder containing a `Layertrail.layertrail` file. The capitalization is part of the canonical filename on case-sensitive filesystems.
+Each Statekeep project is stored in a folder containing a `Statekeep.statekeep` file. The capitalization is part of the canonical filename on case-sensitive filesystems.
 
-That file is the source of truth. Search indexes are rebuildable. Snapshot history is Git-backed. The app is designed so the durable project state remains inspectable and portable. Internal recovery payloads under `.layertrail/recovery/` intentionally remain JSON sidecar files; they are not Layertrail project documents.
+That file is the source of truth. Search indexes are rebuildable. Snapshot history is Git-backed. The app is designed so the durable project state remains inspectable and portable. Internal recovery payloads under `.statekeep/recovery/` intentionally remain JSON sidecar files; they are not Statekeep project documents.
 
 ## Branding
 
-The repository branding is generated from [resources/layertrail.svg](resources/layertrail.svg).
+The repository branding is generated from [resources/statekeep.svg](resources/statekeep.svg).
 
 To refresh app icons and web assets after updating the mark:
 
@@ -139,7 +139,7 @@ Start here for project docs:
 
 ## Status
 
-Layertrail is still early-stage open source software.
+Statekeep is still early-stage open source software.
 
 The core desktop workflows are in place and covered by unit and Electron end-to-end tests, but the product is still being refined. Expect iteration around UX, packaging, and polish.
 
@@ -155,4 +155,4 @@ If you want to contribute, start by:
 
 ## License
 
-Layertrail is licensed under the [MIT License](LICENSE).
+Statekeep is licensed under the [MIT License](LICENSE).

@@ -20,14 +20,14 @@ let historyPath: string
 let backupPath: string
 
 beforeEach(async () => {
-  directory = mkdtempSync(join(tmpdir(), 'layertrail-history-backup-'))
+  directory = mkdtempSync(join(tmpdir(), 'statekeep-history-backup-'))
   git = new GitService(logger as any)
   manager = new ProjectManager(git, logger as any)
   const result = await manager.createProject('History Backup Lab', directory)
   if (!result.ok) throw new Error(result.error.message)
   projectPath = result.data.path!
-  historyPath = join(projectPath, '.layertrail', 'history.json')
-  backupPath = join(projectPath, '.layertrail', 'history.backup.json')
+  historyPath = join(projectPath, '.statekeep', 'history.json')
+  backupPath = join(projectPath, '.statekeep', 'history.backup.json')
 })
 
 afterEach(async () => {
@@ -88,7 +88,7 @@ describe('automatic history backup and explicit restore', () => {
     expect(await manager.restoreHistoryBackup({ token: status.token }))
       .toMatchObject({ ok: false, error: { code: 'VALIDATION_FAILED' } })
     expect(readFileSync(historyPath)).toEqual(bytes)
-    expect(readdirSync(join(projectPath, '.layertrail')).filter(name => name.includes('.damaged-'))).toEqual([])
+    expect(readdirSync(join(projectPath, '.statekeep')).filter(name => name.includes('.damaged-'))).toEqual([])
   })
 
   it.each(['missing', 'corrupt', 'foreign', 'future backup', 'missing snapshot', 'future primary', 'healthy primary'])('refuses unsafe restore: %s', async fault => {
@@ -148,8 +148,8 @@ describe('automatic history backup and explicit restore', () => {
     const reverted = await manager.snapshotRevert({ name: 'baseline', note: 'Rollback later work' })
     if (!reverted.ok) throw new Error(reverted.error.message)
     // Ensure an unlisted payload exists independently of whether HEAD matched.
-    mkdirSync(join(projectPath, '.layertrail', 'recovery'), { recursive: true })
-    const orphan = join(projectPath, '.layertrail', 'recovery', 'unlisted.document.json')
+    mkdirSync(join(projectPath, '.statekeep', 'recovery'), { recursive: true })
+    const orphan = join(projectPath, '.statekeep', 'recovery', 'unlisted.document.json')
     writeFileSync(orphan, JSON.stringify(manager.getCurrent()))
     writeFileSync(backupPath, backup)
     writeFileSync(historyPath, '{damaged')
@@ -166,10 +166,10 @@ describe('automatic history backup and explicit restore', () => {
 
   it('rechecks referenced files when restoring a preview', async () => {
     await manager.snapshotCreate('baseline')
-    mkdirSync(join(projectPath, '.layertrail', 'recovery'), { recursive: true })
+    mkdirSync(join(projectPath, '.statekeep', 'recovery'), { recursive: true })
     writeFileSync(historyPath, '{damaged')
     const status = await preview()
-    writeFileSync(join(projectPath, '.layertrail', 'recovery', 'new.document.json'), '{}')
+    writeFileSync(join(projectPath, '.statekeep', 'recovery', 'new.document.json'), '{}')
     expect(await manager.restoreHistoryBackup({ token: status.token })).toMatchObject({ ok: false, error: { code: 'VALIDATION_FAILED' } })
   })
 
@@ -252,7 +252,7 @@ describe('automatic history backup and explicit restore', () => {
       .toMatchObject({ ok: false, error: { code: 'HISTORY_BACKUP_FAILED' } })
     expect((await git.listSnapshots(projectPath)).map(snapshot => snapshot.name)).toEqual(['baseline'])
     expect(readFileSync(historyPath)).toEqual(bytes)
-    expect(readdirSync(join(projectPath, '.layertrail')).filter(name => name.endsWith('.tmp'))).toEqual([])
+    expect(readdirSync(join(projectPath, '.statekeep')).filter(name => name.endsWith('.tmp'))).toEqual([])
   })
 
   it('retains the previous backup and its payloads if backup refresh fails after primary commit', async () => {

@@ -14,9 +14,9 @@ import { fileURLToPath } from 'url'
 const ROOT_DIR = fileURLToPath(new URL('..', import.meta.url))
 const DIST_DIR = join(ROOT_DIR, 'dist')
 const VERSION = JSON.parse(readFileSync(join(ROOT_DIR, 'package.json'), 'utf8')).version
-const PREFIX = `Layertrail-${VERSION}-linux-`
-const MIME_TYPE = 'application/x-layertrail'
-const PROJECT_GLOB = '*.layertrail'
+const PREFIX = `Statekeep-${VERSION}-linux-`
+const MIME_TYPE = 'application/x-statekeep'
+const PROJECT_GLOB = '*.statekeep'
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)
@@ -70,7 +70,7 @@ function desktopValue(contents, key) {
 
 function verifyDesktopFile(path, label) {
   const contents = readFileSync(path, 'utf8')
-  assert(desktopValue(contents, 'Name') === 'Layertrail', `${label}: desktop Name must be Layertrail`)
+  assert(desktopValue(contents, 'Name') === 'Statekeep', `${label}: desktop Name must be Statekeep`)
   assert(desktopValue(contents, 'Icon'), `${label}: desktop entry has no Icon`)
   assert(desktopValue(contents, 'Exec'), `${label}: desktop entry has no Exec command`)
   assert(desktopValue(contents, 'Categories')?.split(';').includes('Office'), `${label}: desktop Categories must include Office`)
@@ -89,11 +89,11 @@ function verifyMimeDefinition(root, label) {
 function verifyIcon(root, label, isAppImage) {
   const files = walk(root)
   const hasIcon = isAppImage
-    // AppImage convention is a root .DirIcon (normally targeting layertrail.png)
+    // AppImage convention is a root .DirIcon (normally targeting statekeep.png)
     // rather than the hicolor hierarchy used by system packages.
-    ? files.some(path => basename(path) === '.DirIcon' || basename(path) === 'layertrail.png')
+    ? files.some(path => basename(path) === '.DirIcon' || basename(path) === 'statekeep.png')
     : files.some(path => /\/icons\/.+\.png$/i.test(path))
-  assert(hasIcon, `${label}: no installed Layertrail icon was found`)
+  assert(hasIcon, `${label}: no installed Statekeep icon was found`)
 }
 
 function verifyTree(root, label, { requireMimeDefinition, isAppImage = false }) {
@@ -101,7 +101,7 @@ function verifyTree(root, label, { requireMimeDefinition, isAppImage = false }) 
   verifyDesktopFile(desktop, label)
   verifyIcon(root, label, isAppImage)
   if (requireMimeDefinition) verifyMimeDefinition(root, label)
-  console.log(`${label}: ${relative(root, desktop)} has Layertrail name, Office category, icon, and ${MIME_TYPE}`)
+  console.log(`${label}: ${relative(root, desktop)} has Statekeep name, Office category, icon, and ${MIME_TYPE}`)
 }
 
 function withTemporaryDirectory(prefix, action) {
@@ -115,21 +115,21 @@ function withTemporaryDirectory(prefix, action) {
 
 function verifyAppImage(path) {
   assert((statSync(path).mode & 0o111) !== 0, `${path} is not executable`)
-  withTemporaryDirectory('layertrail-appimage-', directory => {
+  withTemporaryDirectory('statekeep-appimage-', directory => {
     run(path, ['--appimage-extract'], { cwd: directory })
     verifyTree(join(directory, 'squashfs-root'), 'AppImage', { requireMimeDefinition: false, isAppImage: true })
   })
 }
 
 function verifyDeb(path) {
-  withTemporaryDirectory('layertrail-deb-', directory => {
+  withTemporaryDirectory('statekeep-deb-', directory => {
     run('dpkg-deb', ['--extract', path, directory])
     verifyTree(directory, 'deb', { requireMimeDefinition: true })
   })
 }
 
 function verifyRpm(path) {
-  withTemporaryDirectory('layertrail-rpm-', directory => {
+  withTemporaryDirectory('statekeep-rpm-', directory => {
     // The cpio stream is the whole uncompressed app (hundreds of MB), far past
     // what execFileSync will buffer, so rpm2cpio writes it to a file instead.
     const archivePath = join(directory, 'payload.cpio')

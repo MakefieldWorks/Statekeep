@@ -1,5 +1,5 @@
 // Read-only review of recovery material: unlisted files in
-// .layertrail/recovery that could be registered as recovery points, and the
+// .statekeep/recovery that could be registered as recovery points, and the
 // automatic history backup. Both return a token over everything they read so
 // a later write can refuse when anything changed since the user reviewed it.
 
@@ -25,8 +25,8 @@ export function scanRecoveryFiles(
   readHistory: () => SnapshotHistoryState,
   parse: (raw: string) => Result<Project>,
 ): RecoveryFilePreview {
-  const directory = join(project.path!, '.layertrail', 'recovery')
-  const metadataDirectory = join(project.path!, '.layertrail')
+  const directory = join(project.path!, '.statekeep', 'recovery')
+  const metadataDirectory = join(project.path!, '.statekeep')
   if (existsSync(metadataDirectory) && lstatSync(metadataDirectory).isSymbolicLink()) {
     throw new Error('The metadata directory must not be a link.')
   }
@@ -132,7 +132,7 @@ export async function validateHistoryBackup(
     else candidate.history.events.splice(index, 0, event)
   }
   let recoveryFiles: string[] = []
-  try { recoveryFiles = readdirSync(join(project.path, '.layertrail', 'recovery')) } catch (error) {
+  try { recoveryFiles = readdirSync(join(project.path, '.statekeep', 'recovery')) } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
   }
   const registered = new Set(candidate.history.recoveryPoints.map(point => point.payloadPath.split(/[\\/]/).pop()))

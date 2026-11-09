@@ -20,15 +20,15 @@ let backupPath: string
 const recoveryName = 'recovery-unlisted.document.json'
 
 beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), 'layertrail-metadata-interruption-'))
+  root = mkdtempSync(join(tmpdir(), 'statekeep-metadata-interruption-'))
   git = new GitService(logger as any)
   manager = new ProjectManager(git, logger as any)
   const created = await manager.createProject('Metadata Interruption', root)
   if (!created.ok) throw new Error(created.error.message)
   path = created.data.path!
   store = new HistoryOperationStore(path, created.data.id)
-  historyPath = join(path, '.layertrail', 'history.json')
-  backupPath = join(path, '.layertrail', 'history.backup.json')
+  historyPath = join(path, '.statekeep', 'history.json')
+  backupPath = join(path, '.statekeep', 'history.backup.json')
   expect((await manager.snapshotCreate('baseline')).ok).toBe(true)
   mkdirSync(store.recoveryPath, { recursive: true })
   writeFileSync(join(store.recoveryPath, recoveryName), JSON.stringify(manager.getCurrent()))
@@ -143,7 +143,7 @@ describe('metadata-only history interruption protection', () => {
       const changed = JSON.parse(readFileSync(historyPath, 'utf8'))
       changed.recoveryPoints.push({
         id: 'reconciled-outside-change', createdAt: new Date().toISOString(), reason: 'reconciled',
-        payloadPath: `.layertrail/recovery/${recoveryName}`,
+        payloadPath: `.statekeep/recovery/${recoveryName}`,
       })
       writeFileSync(historyPath, JSON.stringify(changed))
     })
@@ -269,7 +269,7 @@ describe('metadata-only history interruption protection', () => {
     const interrupted = interruptCleanup()
     const restored = await manager.restoreHistoryBackup({ token: status.data.token })
     if (!restored.ok || !restored.data.preservedPath) throw new Error(JSON.stringify(restored))
-    writeFileSync(restored.data.preservedPath, 'changed outside Layertrail')
+    writeFileSync(restored.data.preservedPath, 'changed outside Statekeep')
     interrupted.mockRestore()
 
     await reopen()

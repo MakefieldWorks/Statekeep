@@ -20,7 +20,7 @@ describe('committed offline Help bundle', () => {
   it('has provenance from a committed website revision', () => {
     const info = readOfflineHelpInfo(HELP_ROOT)
     expect(info).not.toBeNull()
-    expect(info?.site).toBe('https://layertrail.app')
+    expect(info?.site).toBe('https://statekeep.app')
     expect(info?.source?.commit).toMatch(/^[0-9a-f]{40}$/)
     expect(info?.source?.dirty).toBe(false)
   })

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Rebuilds resources/help/ (the offline Help bundle) from a website repo
-// checkout (layertrail-website, formerly document-website). See docs/OFFLINE_HELP.md.
+// checkout (statekeep-website). See docs/OFFLINE_HELP.md.
 //
-//   bun run help:update -- ../layertrail-website [--allow-dirty]
+//   bun run help:update -- ../statekeep-website [--allow-dirty]
 //
 // The website repo owns the docs and how they are exported; this script only
 // runs that export and replaces the committed copy, so app builds never need
@@ -18,10 +18,8 @@ const HELP_DIR = join(ROOT_DIR, 'resources', 'help')
 
 const args = process.argv.slice(2)
 const allowDirty = args.includes('--allow-dirty')
-// Default to a sibling checkout, under the website repo's current or former name.
-const defaultWebsiteDir = ['layertrail-website', 'layertrail-website']
-  .map(name => join(ROOT_DIR, '..', name))
-  .find(dir => existsSync(dir)) ?? join(ROOT_DIR, '..', 'layertrail-website')
+// Default to a sibling checkout of the website repo.
+const defaultWebsiteDir = join(ROOT_DIR, '..', 'statekeep-website')
 const websiteDir = resolve(args.find(arg => !arg.startsWith('--')) ?? defaultWebsiteDir)
 const outputDir = join(websiteDir, 'dist-offline-help')
 

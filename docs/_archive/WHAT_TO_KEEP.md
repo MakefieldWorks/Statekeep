@@ -1,10 +1,10 @@
-# What Layertrail Should Keep from Archon
+# What Statekeep Should Keep from Archon
 
 This document lists the **ideas worth preserving** from Archon.
 
 The emphasis is on **conceptual inheritance**, not implementation reuse.
 
-| Concept from Archon | Why it matters | Layertrail recommendation |
+| Concept from Archon | Why it matters | Statekeep recommendation |
 |---|---|---|
 | Hierarchical project model | It gives the product a strong, opinionated center | Keep as the core abstraction |
 | Stable immutable node IDs | Critical for identity, history, and future diff/merge | Keep; UUIDv7 remains a strong candidate |
@@ -20,7 +20,7 @@ The emphasis is on **conceptual inheritance**, not implementation reuse.
 
 ## Summary judgment
 
-If Layertrail keeps only a few deep ideas from Archon, these should be the priorities:
+If Statekeep keeps only a few deep ideas from Archon, these should be the priorities:
 
 1. **hierarchy as a first-class model**
 2. **stable identity**

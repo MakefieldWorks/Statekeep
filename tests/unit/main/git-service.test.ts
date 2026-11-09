@@ -13,7 +13,7 @@ let tmpDir: string
 let git: GitService
 
 beforeEach(() => {
-  tmpDir = join(tmpdir(), `layertrail-git-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  tmpDir = join(tmpdir(), `statekeep-git-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   mkdirSync(tmpDir, { recursive: true })
   git = new GitService(noopLogger)
 })
@@ -26,7 +26,7 @@ function runGit(args: string[]) {
   execFileSync('git', args, { cwd: tmpDir, stdio: 'pipe' })
 }
 
-// Build a Layertrail.layertrail string larger than Node's default 1 MB execFile buffer,
+// Build a Statekeep.statekeep string larger than Node's default 1 MB execFile buffer,
 // so we exercise the maxBuffer path in readSnapshotDocument / readHeadDocument.
 function largeDocumentJson(): string {
   const nodes = Array.from({ length: 6000 }, (_, i) => ({
@@ -46,9 +46,9 @@ describe('GitService — large documents exceed the default execFile buffer', ()
     const json = largeDocumentJson()
     expect(json.length).toBeGreaterThan(1024 * 1024) // > 1 MB
 
-    writeFileSync(join(tmpDir, 'Layertrail.layertrail'), json, 'utf8')
+    writeFileSync(join(tmpDir, 'Statekeep.statekeep'), json, 'utf8')
     runGit(['init'])
-    runGit(['add', 'Layertrail.layertrail'])
+    runGit(['add', 'Statekeep.statekeep'])
     runGit(['-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-m', 'big'])
     runGit(['tag', 'snapshot/big-snap'])
 

@@ -4,7 +4,7 @@ import { tmpdir } from 'os'
 import { pathToFileURL } from 'url'
 import { isTrustedRendererNavigationUrl } from '../../../src/main/renderer-navigation'
 
-const rendererDirectory = join(tmpdir(), 'Layertrail.app', 'Contents', 'Resources', 'app.asar', 'out', 'renderer')
+const rendererDirectory = join(tmpdir(), 'Statekeep.app', 'Contents', 'Resources', 'app.asar', 'out', 'renderer')
 
 describe('isTrustedRendererNavigationUrl', () => {
   it('allows packaged renderer resources but rejects other local files', () => {

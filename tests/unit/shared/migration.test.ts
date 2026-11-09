@@ -96,7 +96,7 @@ describe('migrate — v1 to v2', () => {
 // ─── v2 → v3 migration (templates) ──────────────────────────────────────────────
 
 describe('migrate — v2 to v3', () => {
-  const v2Layertrail = () => ({
+  const v2Statekeep = () => ({
     version: 2,
     id: 'proj',
     name: 'Lab',
@@ -112,13 +112,13 @@ describe('migrate — v2 to v3', () => {
   })
 
   it('adds an empty templates map and bumps version to 3', () => {
-    const result = migrate(v2Layertrail())
+    const result = migrate(v2Statekeep())
     expect(result.version).toBe(3)
     expect(result.templates).toEqual({})
   })
 
   it('is lossless: node property values are untouched', () => {
-    const result = migrate(v2Layertrail())
+    const result = migrate(v2Statekeep())
     const rackA = result.nodes.find((n: any) => n.id === 'a')
     expect(rackA.properties).toEqual({ location: 'Room 1', capacity: 42 })
     expect(rackA.templateId).toBeUndefined()
@@ -126,7 +126,7 @@ describe('migrate — v2 to v3', () => {
 
   it('preserves an existing templates map (idempotent re-run)', () => {
     const withTemplates: any = {
-      ...v2Layertrail(),
+      ...v2Statekeep(),
       version: 3,
       templates: { rack: { label: 'Rack', fields: { location: { type: 'string' } } } },
     }

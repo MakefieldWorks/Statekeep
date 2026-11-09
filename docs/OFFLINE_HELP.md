@@ -1,18 +1,18 @@
 # Offline Help
 
-**Help → Layertrail Help** opens the user documentation in a Layertrail window. It
+**Help → Statekeep Help** opens the user documentation in a Statekeep window. It
 works with no network connection. **Help → Online Documentation** opens the same
-docs on the public website, <https://layertrail.app>.
+docs on the public website, <https://statekeep.app>.
 
 ## One source
 
 The docs are written once, as Markdown in the website repository
-(`layertrail-website`, under `src/content/docs/docs/`). The website's
+(`statekeep-website`, under `src/content/docs/docs/`). The website's
 `bun run build:offline-help` builds those pages as static files: the same
 Starlight pages, sidebar, styles, and Pagefind search as the website, without
 the landing, download, and changelog pages, which need live release data.
 
-Layertrail commits that output under `resources/help/`. App builds and releases
+Statekeep commits that output under `resources/help/`. App builds and releases
 never fetch the website repo or anything else from the network, and every
 release ships the docs that were committed with it.
 
@@ -22,8 +22,8 @@ release ships the docs that were committed with it.
 {
   "format": 1,
   "entry": "/docs/start/introduction/",
-  "site": "https://layertrail.app",
-  "source": { "repository": "layertrail-website", "commit": "<sha>", "dirty": false }
+  "site": "https://statekeep.app",
+  "source": { "repository": "statekeep-website", "commit": "<sha>", "dirty": false }
 }
 ```
 
@@ -36,11 +36,11 @@ Do this after a docs change merges on the website's `main`, and before a
 release whose features the docs describe.
 
 ```bash
-# in a layertrail-website checkout
+# in a statekeep-website checkout
 git checkout main && git pull && bun install
 
 # in this repo
-bun run help:update -- ../layertrail-website
+bun run help:update -- ../statekeep-website
 bun run test   # includes checks on the committed bundle
 ```
 
@@ -56,7 +56,7 @@ website squash-merges, so branch commits disappear after merge.
 `src/main/offline-help.ts` holds the rules and `src/main/help-window.ts` wires
 them into Electron.
 
-- **Protocol.** The bundle is served from `layertrail-help://help/`, a scheme
+- **Protocol.** The bundle is served from `statekeep-help://help/`, a scheme
   registered as standard, secure, and fetch-capable before the app is ready.
   A real origin is what makes Astro's root-relative URLs (`/_astro/…`,
   `/docs/…`), module scripts, and Pagefind's `fetch` and WebAssembly work. A
@@ -82,7 +82,7 @@ them into Electron.
   process resolves it from its own folder (`out/main`), so the same path works
   in `bun run dev`, E2E runs, and installed apps.
 
-If the bundle is missing or `offline-help.json` is invalid, Layertrail Help shows
+If the bundle is missing or `offline-help.json` is invalid, Statekeep Help shows
 a dialog that offers the online documentation instead.
 
 ## Verification
@@ -105,10 +105,10 @@ a dialog that offers the online documentation instead.
 
 On a packaged build with networking turned off:
 
-1. Help → Layertrail Help opens "What is Layertrail?" with styles and the sidebar.
+1. Help → Statekeep Help opens "What is Statekeep?" with styles and the sidebar.
 2. Search for "snapshot" and open a result.
 3. Toggle light/dark with the theme picker.
-4. Choose Help → Layertrail Help again. The same window comes to the front.
+4. Choose Help → Statekeep Help again. The same window comes to the front.
 5. With a project open and Help focused, File → Save still saves the project,
    and Undo in the Help search field does not undo a project edit.
 6. Help → Report an Issue… shows the issue address and says diagnostics were

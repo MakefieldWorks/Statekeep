@@ -1,6 +1,6 @@
 # Batch property editing
 
-Layertrail can set, add, or clear one property across an explicit selection of two or more live nodes. Cmd/Ctrl-click or keyboard Space toggles individual visible nodes. Shift-click or Shift+Arrow selects the visible range from the primary selection.
+Statekeep can set, add, or clear one property across an explicit selection of two or more live nodes. Cmd/Ctrl-click or keyboard Space toggles individual visible nodes. Shift-click or Shift+Arrow selects the visible range from the primary selection.
 
 The detail pane lists the exact selected nodes. The edit dialog shows when current values are mixed and previews every node whose stored value will change, including its before and after value. Nodes that already have the requested value remain untouched and are excluded from the affected count.
 

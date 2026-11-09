@@ -1,4 +1,4 @@
-// Schema migration pipeline for `.layertrail/history.json`.
+// Schema migration pipeline for `.statekeep/history.json`.
 // Mirrors the document migrate pattern in src/shared/migration.ts.
 //
 // History tracking shipped at version 1. Future versions plug in here:
@@ -119,7 +119,7 @@ function validateHistory(data: Record<string, unknown>): void {
     if (!isRecord(point) || typeof point.id !== 'string' || !point.id || recoveryIds.has(point.id) ||
         typeof point.createdAt !== 'string' || !Number.isFinite(Date.parse(point.createdAt)) ||
         (point.reason !== 'pre-revert' && point.reason !== 'reconciled') || typeof point.payloadPath !== 'string' ||
-        !/^\.layertrail[/\\]recovery[/\\][^/\\]+\.json$/.test(point.payloadPath) || point.payloadPath.includes('..')) {
+        !/^\.statekeep[/\\]recovery[/\\][^/\\]+\.json$/.test(point.payloadPath) || point.payloadPath.includes('..')) {
       throw new Error('Invalid recovery point metadata')
     }
     recoveryIds.add(point.id)

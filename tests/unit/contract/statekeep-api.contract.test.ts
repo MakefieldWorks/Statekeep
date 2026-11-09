@@ -1,6 +1,6 @@
-// LayertrailAPI contract / conformance suite.
+// StatekeepAPI contract / conformance suite.
 //
-// Scripted scenarios drive the core LayertrailAPI surface end-to-end against the
+// Scripted scenarios drive the core StatekeepAPI surface end-to-end against the
 // real backend (ProjectManager + real GitService + SQLite indices, in a temp
 // git repo). Each call's Result<T> is normalized (see normalize.ts) and the
 // ordered log is compared to a committed golden file.
@@ -8,7 +8,7 @@
 // WHY: a backend-agnostic behavioral spec. The IPC handlers in
 // src/main/index.ts are thin pass-throughs to ProjectManager, so this IS the
 // API contract. A future backend (e.g. a Rust/Tauri rewrite) implementing the
-// same LayertrailAPI must reproduce these goldens when driven through the same
+// same StatekeepAPI must reproduce these goldens when driven through the same
 // scenarios — turning "did we preserve behavior?" into a runnable diff.
 //
 // Regenerate goldens after an intentional contract change:
@@ -58,7 +58,7 @@ let tmpDir: string
 let managers: ProjectManager[] = []
 
 beforeEach(() => {
-  tmpDir = join(tmpdir(), `layertrail-contract-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  tmpDir = join(tmpdir(), `statekeep-contract-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   mkdirSync(tmpDir, { recursive: true })
   managers = []
 })
@@ -161,7 +161,7 @@ const instrumentTemplate: NodeTemplate = {
   },
 }
 
-describe('LayertrailAPI contract', () => {
+describe('StatekeepAPI contract', () => {
   it('canonical lifecycle — full backend surface', async () => {
     await runScenario('lifecycle.json', async ({ record, recordSearch, setupProject }) => {
       const { m, created, rootId } = await setupProject('Contract Lab')
@@ -198,7 +198,7 @@ describe('LayertrailAPI contract', () => {
       record('nodeDelete(Rack Alpha) force', m.nodeDelete(rackAId, { unlinkReferences: true }))
       // getCurrent is the one method whose IPC handler wraps the bare
       // ProjectManager return in ok() — record the Result<Project|null> envelope
-      // so the golden matches the actual LayertrailAPI contract, not the internal.
+      // so the golden matches the actual StatekeepAPI contract, not the internal.
       record('getCurrent', ok(m.getCurrent()))
     })
   })

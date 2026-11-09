@@ -11,7 +11,7 @@ test('filters inventory by template, missing required values, subtree, and prope
 }, testInfo) => {
   const projectDir = join(workspaceDir, 'Filtered Lab')
   mkdirSync(projectDir)
-  writeFileSync(join(projectDir, 'Layertrail.layertrail'), JSON.stringify({
+  writeFileSync(join(projectDir, 'Statekeep.statekeep'), JSON.stringify({
     version: 2,
     id: 'filtered-lab',
     name: 'Filtered Lab',

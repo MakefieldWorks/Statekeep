@@ -10,7 +10,7 @@ import type { Project } from '../../../src/shared/types'
 let tmpDir: string
 
 beforeEach(() => {
-  tmpDir = join(tmpdir(), `layertrail-recent-projects-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  tmpDir = join(tmpdir(), `statekeep-recent-projects-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   mkdirSync(tmpDir, { recursive: true })
   vi.useFakeTimers()
   vi.setSystemTime(new Date('2026-07-01T12:00:00.000Z'))
@@ -36,7 +36,7 @@ function project(path: string, name = 'Lab'): Project {
 function writeProjectDir(name: string): string {
   const projectDir = join(tmpDir, name)
   mkdirSync(projectDir, { recursive: true })
-  writeFileSync(join(projectDir, 'Layertrail.layertrail'), '{}', 'utf8')
+  writeFileSync(join(projectDir, 'Statekeep.statekeep'), '{}', 'utf8')
   return projectDir
 }
 

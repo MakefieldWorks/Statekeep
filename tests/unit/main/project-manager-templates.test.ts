@@ -38,7 +38,7 @@ function makeDocument(overrides: Partial<Record<string, unknown>> = {}) {
 }
 
 function writeFixture(dir: string, data: object) {
-  writeFileSync(join(dir, 'Layertrail.layertrail'), JSON.stringify(data, null, 2), 'utf8')
+  writeFileSync(join(dir, 'Statekeep.statekeep'), JSON.stringify(data, null, 2), 'utf8')
 }
 
 async function openWith(data: object): Promise<Project> {
@@ -68,7 +68,7 @@ const controllerLink: NodeTemplate = {
 }
 
 beforeEach(() => {
-  tmpDir = join(tmpdir(), `layertrail-tpl-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  tmpDir = join(tmpdir(), `statekeep-tpl-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   mkdirSync(tmpDir, { recursive: true })
 })
 

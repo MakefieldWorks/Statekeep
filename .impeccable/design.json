@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-08-02T00:00:00.000Z",
-  "title": "Design System: Layertrail",
+  "title": "Design System: Statekeep",
   "extensions": {
     "colorMeta": {
       "panel-paper": {
@@ -177,7 +177,7 @@
   ],
   "narrative": {
     "northStar": "The Instrument Panel",
-    "overview": "Layertrail reads like a calibrated readout, not a document. The chrome is warm, quiet, and almost entirely colorless — a neutral gauge face — and every bit of color on screen is a signal about state. Density is deliberate and high: 32px rows, 12px labels, tabular numerals for counts. The panel does not decorate itself, because a decorated instrument is a harder instrument to read.\n\nThe consequence is a discipline that runs through the whole system: color is not available for aesthetics. Emerald, red, sky, amber, and violet each carry a fixed meaning about how a node changed. Spending any of them on a button, a header, or a brand moment would degrade the diff view, which is the product's reason to exist. What remains for expression is typography, spacing, hairlines, and motion — and the system leans on those hard.\n\nThe most distinctive behavior is the lens: in compare mode, contiguous runs of unchanged rows collapse into a single summarized fold marker, and the collapse is animated rather than snapped. Regions of the tree literally change magnification based on relevance. That, not any color or shape choice, is what makes the interface feel like an instrument being focused.",
+    "overview": "Statekeep reads like a calibrated readout, not a document. The chrome is warm, quiet, and almost entirely colorless — a neutral gauge face — and every bit of color on screen is a signal about state. Density is deliberate and high: 32px rows, 12px labels, tabular numerals for counts. The panel does not decorate itself, because a decorated instrument is a harder instrument to read.\n\nThe consequence is a discipline that runs through the whole system: color is not available for aesthetics. Emerald, red, sky, amber, and violet each carry a fixed meaning about how a node changed. Spending any of them on a button, a header, or a brand moment would degrade the diff view, which is the product's reason to exist. What remains for expression is typography, spacing, hairlines, and motion — and the system leans on those hard.\n\nThe most distinctive behavior is the lens: in compare mode, contiguous runs of unchanged rows collapse into a single summarized fold marker, and the collapse is animated rather than snapped. Regions of the tree literally change magnification based on relevance. That, not any color or shape choice, is what makes the interface feel like an instrument being focused.",
     "keyCharacteristics": [
       "Warm stone neutrals on a paper ground (panel-paper), never cool gray",
       "Color exclusively semantic; zero decorative accents in the chrome",
@@ -188,7 +188,7 @@
       "Motion reserved for structural change (folds), not for state feedback"
     ],
     "rules": [
-      { "name": "The Reserved Spectrum Rule", "body": "Color in Layertrail means something changed. No hue may be spent on branding, emphasis, category, or delight. If a new element needs to stand out, it earns it through weight, size, spacing, or a hairline — never a color the diff view is already using.", "section": "colors" },
+      { "name": "The Reserved Spectrum Rule", "body": "Color in Statekeep means something changed. No hue may be spent on branding, emphasis, category, or delight. If a new element needs to stand out, it earns it through weight, size, spacing, or a hairline — never a color the diff view is already using.", "section": "colors" },
       { "name": "The Warm Neutral Rule", "body": "Every gray is stone. Never gray, zinc, neutral, or slate. A single cool gray next to stone reads as a rendering bug.", "section": "colors" },
       { "name": "The Amber Overload Rule", "body": "Amber already carries renamed, property-changed, template-changed, High severity, search matches, folds, and advisories. It is at capacity. New advisory states must reuse an existing amber pattern exactly or find a non-color signal — do not add a seventh meaning.", "section": "colors" },
       { "name": "The Twelve-Pixel Floor Rule", "body": "12px is the smallest readable tier. 10px is permitted only for uppercase micro-labels, where the caps height keeps it legible. Never set sentence-case prose at 10px.", "section": "typography" },

@@ -22,10 +22,10 @@
     <header class="flex items-center justify-between border-b border-stone-200 pb-6">
       <div class="flex items-center gap-3">
         <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white ring-1 ring-stone-200">
-          <img src={brandMark} alt="Layertrail logo" class="h-6 w-6" />
+          <img src={brandMark} alt="Statekeep logo" class="h-6 w-6" />
         </div>
         <div>
-          <h1 class="text-lg font-semibold tracking-tight text-stone-800">Layertrail</h1>
+          <h1 class="text-lg font-semibold tracking-tight text-stone-800">Statekeep</h1>
           <p class="mt-0.5 text-sm text-stone-500">Projects</p>
         </div>
       </div>

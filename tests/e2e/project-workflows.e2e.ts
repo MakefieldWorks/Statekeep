@@ -134,7 +134,7 @@ async function closeSettingsWindow(settingsPage: Page): Promise<void> {
 async function writeFixtureProject(targetDir: string, fixtureName: string): Promise<void> {
   mkdirSync(targetDir, { recursive: true })
   const fixturePath = join(process.cwd(), 'tests', 'fixtures', fixtureName)
-  writeFileSync(join(targetDir, 'Layertrail.layertrail'), readFileSync(fixturePath, 'utf8'), 'utf8')
+  writeFileSync(join(targetDir, 'Statekeep.statekeep'), readFileSync(fixturePath, 'utf8'), 'utf8')
 }
 
 async function launchAppWithArgs(args: string[], userDataDir: string): Promise<ElectronApplication> {
@@ -227,9 +227,9 @@ test('creates and opens an example project from the empty project hub', async ({
   await expect(treeRow(appPage, 'Telemetry Gateway')).toBeVisible()
 
   const project = await currentProject(appPage)
-  expect(project.name).toBe('Layertrail Sample Lab')
+  expect(project.name).toBe('Statekeep Sample Lab')
   expect(project.path).toBe(
-    join(workspaceDir, 'example-projects', 'Layertrail Sample Lab'),
+    join(workspaceDir, 'example-projects', 'Statekeep Sample Lab'),
   )
 
   const snapshots = await appPage.evaluate(() => window.api.snapshot.list())
@@ -283,26 +283,26 @@ test('opens a dedicated settings window, syncs selected schemes, and saves prefe
 
   await expect(settingsPage.getByRole('heading', { name: 'General' })).toBeVisible()
   expect(await settingsPage.getByTestId('light-theme-preference').locator('option').evaluateAll(options => options.map(option => option.value))).toEqual([
-    'layertrail-light',
-    'layertrail-graphite-light',
+    'statekeep-light',
+    'statekeep-graphite-light',
   ])
   expect(await settingsPage.getByTestId('dark-theme-preference').locator('option').evaluateAll(options => options.map(option => option.value))).toEqual([
-    'layertrail-dark',
-    'layertrail-graphite-dark',
+    'statekeep-dark',
+    'statekeep-graphite-dark',
   ])
 
   await settingsPage.getByTestId('theme-preference').selectOption('light')
-  await settingsPage.getByTestId('light-theme-preference').selectOption('layertrail-graphite-light')
+  await settingsPage.getByTestId('light-theme-preference').selectOption('statekeep-graphite-light')
   await expect(settingsPage.getByRole('status')).toContainText('Appearance updated')
-  await expect.poll(() => settingsPage.evaluate(() => document.documentElement.dataset.theme)).toBe('layertrail-graphite-light')
-  await expect.poll(() => appPage.evaluate(() => document.documentElement.dataset.theme)).toBe('layertrail-graphite-light')
+  await expect.poll(() => settingsPage.evaluate(() => document.documentElement.dataset.theme)).toBe('statekeep-graphite-light')
+  await expect.poll(() => appPage.evaluate(() => document.documentElement.dataset.theme)).toBe('statekeep-graphite-light')
   await expect.poll(() => appPage.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--theme-surface-canvas').trim()))
     .toBe('244 246 248')
 
-  await settingsPage.getByTestId('dark-theme-preference').selectOption('layertrail-graphite-dark')
+  await settingsPage.getByTestId('dark-theme-preference').selectOption('statekeep-graphite-dark')
   await settingsPage.getByTestId('theme-preference').selectOption('dark')
-  await expect.poll(() => settingsPage.evaluate(() => document.documentElement.dataset.theme)).toBe('layertrail-graphite-dark')
-  await expect.poll(() => appPage.evaluate(() => document.documentElement.dataset.theme)).toBe('layertrail-graphite-dark')
+  await expect.poll(() => settingsPage.evaluate(() => document.documentElement.dataset.theme)).toBe('statekeep-graphite-dark')
+  await expect.poll(() => appPage.evaluate(() => document.documentElement.dataset.theme)).toBe('statekeep-graphite-dark')
   await expect.poll(() => appPage.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--theme-surface-canvas').trim()))
     .toBe('16 21 27')
 
@@ -316,8 +316,8 @@ test('opens a dedicated settings window, syncs selected schemes, and saves prefe
       launchBehavior: 'reopen-last-project',
       appearance: {
         mode: 'dark',
-        lightThemeId: 'layertrail-graphite-light',
-        darkThemeId: 'layertrail-graphite-dark',
+        lightThemeId: 'statekeep-graphite-light',
+        darkThemeId: 'statekeep-graphite-dark',
       },
     },
   })
@@ -341,7 +341,7 @@ test('reopens the last project when that launch behavior is selected', async ({ 
     const settingsPage = await openSettingsWindow(firstApp)
     await settingsPage.getByTestId('launch-behavior').selectOption('reopen-last-project')
     await expect(settingsPage.getByRole('status')).toContainText('Saved')
-    await settingsPage.getByTestId('dark-theme-preference').selectOption('layertrail-graphite-dark')
+    await settingsPage.getByTestId('dark-theme-preference').selectOption('statekeep-graphite-dark')
     await settingsPage.getByTestId('theme-preference').selectOption('dark')
     await expect(settingsPage.getByRole('status')).toContainText('Appearance updated')
     await closeSettingsWindow(settingsPage)
@@ -356,7 +356,7 @@ test('reopens the last project when that launch behavior is selected', async ({ 
     // commits; a raw evaluate() then fails when that navigation replaces the
     // page. Locator assertions retry across it, so wait for the app first.
     await expect(reopenedPage.getByTestId('project-view')).toBeVisible()
-    await expect.poll(() => reopenedPage.evaluate(() => document.documentElement.dataset.theme)).toBe('layertrail-graphite-dark')
+    await expect.poll(() => reopenedPage.evaluate(() => document.documentElement.dataset.theme)).toBe('statekeep-graphite-dark')
     await expect(treeRow(reopenedPage, 'Reopen Lab')).toBeVisible()
     const reopenedProject = await currentProject(reopenedPage)
     expect((reopenedProject as typeof reopenedProject & { path?: string }).path).toBe(projectDir)
@@ -366,7 +366,7 @@ test('reopens the last project when that launch behavior is selected', async ({ 
 })
 
 test('mutes the interface when its native window loses focus', async ({ appPage, electronApp }) => {
-  test.skip(process.env['LAYERTRAIL_E2E_BACKGROUND'] === '1', 'Native focus requires a visible E2E run')
+  test.skip(process.env['STATEKEEP_E2E_BACKGROUND'] === '1', 'Native focus requires a visible E2E run')
   await expect.poll(() => appPage.evaluate(() => document.documentElement.dataset.windowFocused)).toBe('true')
 
   await electronApp.evaluate(({ BrowserWindow }) => {
@@ -382,18 +382,18 @@ test('mutes the interface when its native window loses focus', async ({ appPage,
 
 test('adds opened projects to native Open Recent and OS recent documents', async ({ appPage, electronApp, workspaceDir }) => {
   await electronApp.evaluate(({ app }) => {
-    const state = globalThis as typeof globalThis & { __layertrailRecentDocuments?: string[] }
-    state.__layertrailRecentDocuments = []
+    const state = globalThis as typeof globalThis & { __statekeepRecentDocuments?: string[] }
+    state.__statekeepRecentDocuments = []
     app.addRecentDocument = (path: string) => {
-      state.__layertrailRecentDocuments?.push(path)
+      state.__statekeepRecentDocuments?.push(path)
     }
   })
 
   const projectDir = await createProjectThroughUi(appPage, electronApp, workspaceDir, 'Recent Bench')
   const recentItems = await nativeOpenRecentMenuItems(electronApp)
   const addedDocuments = await electronApp.evaluate(() => {
-    const state = globalThis as typeof globalThis & { __layertrailRecentDocuments?: string[] }
-    return state.__layertrailRecentDocuments ?? []
+    const state = globalThis as typeof globalThis & { __statekeepRecentDocuments?: string[] }
+    return state.__statekeepRecentDocuments ?? []
   })
 
   expect(recentItems[0]).toMatchObject({
@@ -465,7 +465,7 @@ test('reorders siblings and reparents nodes', async ({ appPage, electronApp, wor
   const projectDir = join(workspaceDir, 'Reorder Lab')
   mkdirSync(projectDir, { recursive: true })
   writeFileSync(
-    join(projectDir, 'Layertrail.layertrail'),
+    join(projectDir, 'Statekeep.statekeep'),
     JSON.stringify({
       version: 2,
       id: '01900000-0000-7000-8000-000000000100',
@@ -602,7 +602,7 @@ test('shows an empty state when search finds no matches', async ({ appPage, elec
 
 test('autosaves edits to disk and reopens them cleanly', async ({ appPage, electronApp, workspaceDir }) => {
   const projectDir = await createProjectThroughUi(appPage, electronApp, workspaceDir, 'Autosave Lab')
-  const payloadPath = join(projectDir, 'Layertrail.layertrail')
+  const payloadPath = join(projectDir, 'Statekeep.statekeep')
 
   await openContextMenuAction(appPage, 'Autosave Lab', 'Add Child')
   await appPage.getByTestId('add-child-input').fill('Rack A')

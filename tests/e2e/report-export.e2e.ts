@@ -102,7 +102,7 @@ test('exports a self-contained HTML review of the snapshot diff', async ({ appPa
 
   const html = readFileSync(outPath, 'utf8')
   expect(html).toMatch(/^<!doctype html>/)
-  expect(html).toContain('Layertrail change review')
+  expect(html).toContain('Statekeep change review')
   expect(html).toContain('HTML Report Lab')
   expect(html).toContain('Widget')
   expect(html).not.toMatch(/<script\b/i)

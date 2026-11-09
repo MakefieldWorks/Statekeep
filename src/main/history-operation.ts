@@ -68,8 +68,8 @@ export class HistoryOperationStore {
   readonly pendingPath: string
   readonly recoveryPath: string
   constructor(private readonly projectPath: string, private readonly projectId: string) {
-    this.pendingPath = join(projectPath, '.layertrail', 'history-operation.json')
-    this.recoveryPath = join(projectPath, '.layertrail', 'recovery')
+    this.pendingPath = join(projectPath, '.statekeep', 'history-operation.json')
+    this.recoveryPath = join(projectPath, '.statekeep', 'recovery')
   }
 
   pending(): boolean {
@@ -81,7 +81,7 @@ export class HistoryOperationStore {
   }
 
   private directories(create = false): void {
-    for (const path of [this.projectPath, join(this.projectPath, '.layertrail'), this.recoveryPath]) {
+    for (const path of [this.projectPath, join(this.projectPath, '.statekeep'), this.recoveryPath]) {
       if (!existsSync(path)) {
         if (!create || path === this.projectPath) throw new Error('An operation evidence folder is missing.')
         mkdirSync(path)

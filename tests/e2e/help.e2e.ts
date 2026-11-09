@@ -2,7 +2,7 @@ import type { ElectronApplication, Page } from '@playwright/test'
 import { DOCUMENTATION_URL, REPORT_ISSUE_URL } from '../../src/shared/external-links'
 import { expect, test } from './fixtures'
 
-const HELP_ENTRY = 'layertrail-help://help/docs/start/introduction/'
+const HELP_ENTRY = 'statekeep-help://help/docs/start/introduction/'
 
 async function clickHelpItem(electronApp: ElectronApplication, label: string): Promise<void> {
   await expect.poll(() => electronApp.evaluate(({ Menu }, itemLabel) =>
@@ -18,11 +18,11 @@ async function clickHelpItem(electronApp: ElectronApplication, label: string): P
 }
 
 async function openHelp(electronApp: ElectronApplication): Promise<Page> {
-  await clickHelpItem(electronApp, 'Layertrail Help')
+  await clickHelpItem(electronApp, 'Statekeep Help')
   // The window exists before its first page loads, so wait for the Help URL.
   let help: Page | undefined
   await expect.poll(() => {
-    help = electronApp.windows().find(page => page.url().startsWith('layertrail-help:'))
+    help = electronApp.windows().find(page => page.url().startsWith('statekeep-help:'))
     return Boolean(help)
   }).toBe(true)
   await help!.waitForLoadState('domcontentloaded')
@@ -47,19 +47,19 @@ test('opens the bundled docs in a reusable Help window', async ({ appPage, elect
   const help = await openHelp(electronApp)
 
   expect(help.url()).toBe(HELP_ENTRY)
-  await expect(help.locator('h1')).toHaveText('What is Layertrail?')
+  await expect(help.locator('h1')).toHaveText('What is Statekeep?')
   // Styles and module scripts load from the bundle under the help origin.
   await expect.poll(() => help.evaluate(() => [...document.styleSheets].some(sheet => sheet.href?.includes('/_astro/')))).toBe(true)
   await expect.poll(() => help.evaluate(() => customElements.get('starlight-theme-select') !== undefined)).toBe(true)
 
-  await help.getByRole('link', { name: 'Install Layertrail' }).first().click()
-  await expect(help).toHaveURL('layertrail-help://help/docs/start/install/')
-  await expect(help.locator('h1')).toHaveText('Install Layertrail')
+  await help.getByRole('link', { name: 'Install Statekeep' }).first().click()
+  await expect(help).toHaveURL('statekeep-help://help/docs/start/install/')
+  await expect(help.locator('h1')).toHaveText('Install Statekeep')
 
   const windowsBefore = await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().length)
-  await clickHelpItem(electronApp, 'Layertrail Help')
+  await clickHelpItem(electronApp, 'Statekeep Help')
   await expect.poll(() => electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().length)).toBe(windowsBefore)
-  await expect(help).toHaveURL('layertrail-help://help/docs/start/install/')
+  await expect(help).toHaveURL('statekeep-help://help/docs/start/install/')
 })
 
 test('searches the bundled docs without a network', async ({ electronApp }) => {
@@ -70,23 +70,23 @@ test('searches the bundled docs without a network', async ({ electronApp }) => {
   const firstResult = help.locator('site-search a[href^="/docs/"]').first()
   await expect(firstResult).toBeVisible({ timeout: 15_000 })
   await firstResult.click()
-  await expect(help).toHaveURL(/^layertrail-help:\/\/help\/docs\//)
+  await expect(help).toHaveURL(/^statekeep-help:\/\/help\/docs\//)
 })
 
 test('opens online-only pages and web links in the browser', async ({ electronApp }) => {
   await recordExternalLinks(electronApp)
   const help = await openHelp(electronApp)
 
-  await help.getByRole('link', { name: 'Install Layertrail' }).first().click()
-  await expect(help).toHaveURL('layertrail-help://help/docs/start/install/')
+  await help.getByRole('link', { name: 'Install Statekeep' }).first().click()
+  await expect(help).toHaveURL('statekeep-help://help/docs/start/install/')
 
   // Each click is a navigation the Help window cancels. Playwright keeps
   // waiting on a cancelled navigation, so click all three from inside the page.
   await help.evaluate(() => {
     for (const selector of [
-      'nav a[href="https://layertrail.app/changelog/"]',
+      'nav a[href="https://statekeep.app/changelog/"]',
       'main a[href="/download/"]',
-      'a[href="https://github.com/MakefieldWorks/Layertrail"]',
+      'a[href="https://github.com/MakefieldWorks/Statekeep"]',
     ]) {
       const link = document.querySelector<HTMLAnchorElement>(selector)
       if (!link) throw new Error(`Link not found: ${selector}`)
@@ -95,15 +95,15 @@ test('opens online-only pages and web links in the browser', async ({ electronAp
   })
 
   await expect.poll(() => openedUrls(electronApp)).toEqual([
-    'https://layertrail.app/changelog/',
-    'https://layertrail.app/download/',
-    'https://github.com/MakefieldWorks/Layertrail',
+    'https://statekeep.app/changelog/',
+    'https://statekeep.app/download/',
+    'https://github.com/MakefieldWorks/Statekeep',
   ])
   // Playwright's own URL tracking waits on the cancelled navigations, so ask
   // Electron which page the Help window still shows.
   expect(await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()
     .map(win => win.webContents.getURL())
-    .filter(url => url.startsWith('layertrail-help:')))).toEqual(['layertrail-help://help/docs/start/install/'])
+    .filter(url => url.startsWith('statekeep-help:')))).toEqual(['statekeep-help://help/docs/start/install/'])
 })
 
 test('refuses help URLs that point outside the bundle', async ({ electronApp }) => {

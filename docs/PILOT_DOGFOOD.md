@@ -3,7 +3,7 @@
 The [2026-09-26 macOS dogfood record](PILOT_DOGFOOD_2026-09-26.md) contains
 completed local checks, observed friction, and the remaining platform handoff.
 
-Use this checklist to test Layertrail as a first user would: with enough data,
+Use this checklist to test Statekeep as a first user would: with enough data,
 history, and change volume to reveal workflow friction. CSV and NetBox JSON
 imports are already shipped; use the notes to decide whether a *refinement*,
 such as saved import mappings, is warranted.
@@ -39,7 +39,7 @@ to test the development Electron build instead. The full `test:e2e` suite also
 uses that development build.
 
 The default Linux CI job runs `package:verify` and the packaged dogfood test
-on every PR. On Linux the packaged executable is `dist/linux-unpacked/layertrail`;
+on every PR. On Linux the packaged executable is `dist/linux-unpacked/statekeep`;
 run the test under `xvfb-run --auto-servernum` when no display is available.
 
 ## Linux Desktop Handoff
@@ -49,7 +49,7 @@ desktop machine to run this checklist on before a release (see
 [RELEASING.md](RELEASING.md#platform-support)). Once there is, support will be
 limited to **x86_64 Ubuntu LTS** and **x86_64 Fedora Workstation**. AppImage
 remains available as a portable fallback, but only the native package is
-expected to register the launcher, icon, and `.layertrail` association
+expected to register the launcher, icon, and `.statekeep` association
 persistently.
 
 Build the Linux release artifacts from a clean checkout, then inspect them
@@ -65,12 +65,12 @@ On Ubuntu, install the generated `.deb`; on Fedora, install the generated
 `.rpm`. For each system, verify all of the following before publishing a
 release:
 
-- The application launcher is named **Layertrail**, appears in the Office or
-  Productivity category, and shows the Layertrail icon at normal and high-DPI
+- The application launcher is named **Statekeep**, appears in the Office or
+  Productivity category, and shows the Statekeep icon at normal and high-DPI
   sizes.
-- A `Layertrail.layertrail` file displays the Layertrail document icon,
-  appears as a Layertrail Project (or equivalent desktop label), opens by
-  double-clicking, and opens from `xdg-open`. Opening it while Layertrail is
+- A `Statekeep.statekeep` file displays the Statekeep document icon,
+  appears as a Statekeep Project (or equivalent desktop label), opens by
+  double-clicking, and opens from `xdg-open`. Opening it while Statekeep is
   already running focuses the existing window and loads the selected project.
 - The native frame/titlebar, File/Edit/Project menus, keyboard accelerators,
   modal dialogs, and folder/file pickers work under both the default Wayland
@@ -95,7 +95,7 @@ Finder/Explorer pass.
 ## Core Workflow
 
 - Launch with no recent projects and choose **Open Example Project**. Confirm
-  that it creates a reusable `Layertrail Sample Lab` in the user's Documents
+  that it creates a reusable `Statekeep Sample Lab` in the user's Documents
   folder, then inspect its templates and compare `baseline-lab` with
   `firmware-update`.
 - Open `./tmp/pilot-dogfood` from the packaged app.
@@ -114,7 +114,7 @@ Finder/Explorer pass.
 
 Switch to the Windows machine after the macOS verification commands above pass
 and the dogfood project has been generated or copied over. From
-`C:\code\Layertrail`, run:
+`C:\code\Statekeep`, run:
 
 ```powershell
 bun install
@@ -126,11 +126,11 @@ bun run generate:project -- --output ./tmp/pilot-dogfood --name "Pilot Lab Inven
 bun run test:dogfood -- --project ./tmp/pilot-dogfood --packaged
 ```
 
-After the automated checks pass, manually open `dist\win-unpacked\Layertrail.exe`
+After the automated checks pass, manually open `dist\win-unpacked\Statekeep.exe`
 and verify the native Windows frame, taskbar icon, Open Recent menu, file-open
 flow, close/quit save behavior, snapshot compare readability, and the
-`.layertrail` document icon in Explorer. On macOS, also inspect the
-`.layertrail` document icon in Finder.
+`.statekeep` document icon in Explorer. On macOS, also inspect the
+`.statekeep` document icon in Finder.
 
 ## Notes To Capture
 
@@ -148,4 +148,4 @@ notes answer:
 - What columns/properties are common enough to seed the MVP?
 - Is parent-child structure best represented by path columns, parent IDs, indentation, or repeated category columns?
 - Should the first import be command/menu-driven, or is a visible onboarding action needed?
-- What validation errors must be shown before writing `Layertrail.layertrail`?
+- What validation errors must be shown before writing `Statekeep.statekeep`?

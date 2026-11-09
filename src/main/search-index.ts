@@ -300,8 +300,8 @@ export class SearchIndexService {
   }
 
   private openDatabase(projectPath: string): { db: Database.Database; dbPath: string } {
-    const dbPath = join(projectPath, '.layertrail', 'index', 'search.db')
-    mkdirSync(join(projectPath, '.layertrail', 'index'), { recursive: true })
+    const dbPath = join(projectPath, '.statekeep', 'index', 'search.db')
+    mkdirSync(join(projectPath, '.statekeep', 'index'), { recursive: true })
 
     const db = new Database(dbPath)
     db.pragma('journal_mode = WAL')

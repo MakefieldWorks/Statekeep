@@ -18,7 +18,7 @@ let tmpRoot: string
 let manager: ProjectManager
 
 beforeEach(() => {
-  tmpRoot = join(tmpdir(), `layertrail-cloud-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  tmpRoot = join(tmpdir(), `statekeep-cloud-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   mkdirSync(tmpRoot, { recursive: true })
   manager = new ProjectManager(noopGit as any, noopLogger as any)
 })
@@ -68,14 +68,14 @@ describe('cloud sync project warnings', () => {
     expect(result.data.projectWarnings).toEqual(expectedWarnings)
     expect(manager.getCurrent()?.projectWarnings).toEqual(expectedWarnings)
 
-    const persisted = JSON.parse(readFileSync(join(parent, 'Cloud Lab', 'Layertrail.layertrail'), 'utf8'))
+    const persisted = JSON.parse(readFileSync(join(parent, 'Cloud Lab', 'Statekeep.statekeep'), 'utf8'))
     expect(persisted.projectWarnings).toBeUndefined()
   })
 
   it('returns a runtime warning when opening a project inside a synced folder', async () => {
     const projectDir = join(tmpRoot, 'OneDrive - Lab', 'Cloud Lab')
     mkdirSync(projectDir, { recursive: true })
-    writeFileSync(join(projectDir, 'Layertrail.layertrail'), JSON.stringify(document(), null, 2), 'utf8')
+    writeFileSync(join(projectDir, 'Statekeep.statekeep'), JSON.stringify(document(), null, 2), 'utf8')
 
     const result = await manager.openProject(projectDir)
 
@@ -97,7 +97,7 @@ describe('cloud sync project warnings', () => {
     expect(update.data.projectWarnings).toEqual(expectedWarnings)
 
     await manager.saveProject()
-    const persisted = JSON.parse(readFileSync(join(projectDir, 'Layertrail.layertrail'), 'utf8'))
+    const persisted = JSON.parse(readFileSync(join(projectDir, 'Statekeep.statekeep'), 'utf8'))
     expect(persisted.projectWarnings).toBeUndefined()
   })
 

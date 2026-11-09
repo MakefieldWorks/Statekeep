@@ -23,7 +23,7 @@ function create(name: string, parent = root) {
 }
 
 beforeEach(async () => {
-  directory = mkdtempSync(join(tmpdir(), 'layertrail-duplicate-'))
+  directory = mkdtempSync(join(tmpdir(), 'statekeep-duplicate-'))
   search = new SearchIndexService()
   manager = new ProjectManager(new GitService(logger), logger, search)
   root = value(await manager.createProject('Lab', directory)).nodes[0].id
@@ -66,7 +66,7 @@ describe('duplicate subtree', () => {
     expect(current().nodes).toEqual(copied.nodes)
     value(await manager.flushAndClose())
     const path = join(directory, 'Lab')
-    expect(JSON.parse(readFileSync(join(path, 'Layertrail.layertrail'), 'utf8')).nodes).toEqual(copied.nodes)
+    expect(JSON.parse(readFileSync(join(path, 'Statekeep.statekeep'), 'utf8')).nodes).toEqual(copied.nodes)
     value(await manager.openProject(path))
     expect(current().nodes).toEqual(copied.nodes)
   })
@@ -141,7 +141,7 @@ describe('duplicate subtree', () => {
       [...original.nodes, { ...original.nodes[1], name: 'Repeated ID' }],
       original.nodes.map(node => node.id === source ? { ...node, parentId: 'missing' } : node),
     ]) {
-      writeFileSync(join(path, 'Layertrail.layertrail'), JSON.stringify({ ...original, nodes }))
+      writeFileSync(join(path, 'Statekeep.statekeep'), JSON.stringify({ ...original, nodes }))
       value(await manager.openProject(path))
       expect(manager.nodeDuplicate(source, 'Copy').ok).toBe(false)
       expect(current().nodes).toEqual(nodes)

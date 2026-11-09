@@ -16,13 +16,13 @@ let source: string
 let archive: string
 let target: string
 beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), 'layertrail-archive-test-'))
+  root = mkdtempSync(join(tmpdir(), 'statekeep-archive-test-'))
   git = new GitService(logger as any)
   manager = new ProjectManager(git, logger as any)
   const result = await manager.createProject('Archive Lab', root)
   if (!result.ok) throw new Error(result.error.message)
   source = result.data.path!
-  archive = join(root, 'project.layertrailarchive')
+  archive = join(root, 'project.statekeeparchive')
   target = join(root, 'restores')
   mkdirSync(target)
 })
@@ -60,12 +60,12 @@ describe('portable project archives', () => {
     manager.nodeCreate(manager.getCurrent()!.nodes[0].id, 'Safety rack')
     const reverted = await manager.snapshotRevert({ name: 'baseline' })
     if (!reverted.ok || !reverted.data.safetyRecoveryPoint) throw new Error('Missing safety point')
-    const historyPath = join(source, '.layertrail', 'history.json')
+    const historyPath = join(source, '.statekeep', 'history.json')
     const history = JSON.parse(readFileSync(historyPath, 'utf8'))
     history.recoveryPoints[0].payloadPath = history.recoveryPoints[0].payloadPath.replaceAll('/', '\\')
     writeFileSync(historyPath, JSON.stringify(history))
-    writeFileSync(join(source, '.layertrail', 'history.json.damaged-test'), Buffer.from([0xff, 0x00]))
-    writeFileSync(join(source, '.layertrail', 'recovery', 'unlisted.txt'), 'preserve me')
+    writeFileSync(join(source, '.statekeep', 'history.json.damaged-test'), Buffer.from([0xff, 0x00]))
+    writeFileSync(join(source, '.statekeep', 'recovery', 'unlisted.txt'), 'preserve me')
     manager.nodeCreate(manager.getCurrent()!.nodes[0].id, 'Unsaved rack')
     const before = structuredClone(manager.getCurrent())
     const undo = manager.editHistoryState()
@@ -79,10 +79,10 @@ describe('portable project archives', () => {
     expect(manager.getCurrent()).toEqual({ ...before, modified: manager.getCurrent()!.modified })
     expect(manager.editHistoryState()).toEqual(undo)
     expect(await git.archiveRefs(restored)).toBe(refs)
-    expect(readFileSync(join(restored, '.layertrail', 'history.json'))).toEqual(readFileSync(historyPath))
-    expect(readFileSync(join(restored, '.layertrail', 'history.json.damaged-test'))).toEqual(Buffer.from([0xff, 0x00]))
-    expect(readFileSync(join(restored, '.layertrail', 'recovery', 'unlisted.txt'), 'utf8')).toBe('preserve me')
-    expect(existsSync(join(restored, '.layertrail', 'index'))).toBe(false)
+    expect(readFileSync(join(restored, '.statekeep', 'history.json'))).toEqual(readFileSync(historyPath))
+    expect(readFileSync(join(restored, '.statekeep', 'history.json.damaged-test'))).toEqual(Buffer.from([0xff, 0x00]))
+    expect(readFileSync(join(restored, '.statekeep', 'recovery', 'unlisted.txt'), 'utf8')).toBe('preserve me')
+    expect(existsSync(join(restored, '.statekeep', 'index'))).toBe(false)
     const other = new ProjectManager(new GitService(logger as any), logger as any)
     try {
       expect((await other.openProject(restored)).ok).toBe(true)
@@ -136,7 +136,7 @@ describe('portable project archives', () => {
   it('preserves an existing export destination on failure', async () => {
     writeFileSync(archive, 'previous archive')
     await manager.snapshotCreate('baseline')
-    writeFileSync(join(source, '.layertrail', 'history.json'), '{bad')
+    writeFileSync(join(source, '.statekeep', 'history.json'), '{bad')
     expect((await manager.exportProjectArchive(archive)).ok).toBe(false)
     expect(readFileSync(archive, 'utf8')).toBe('previous archive')
     expect((await manager.exportProjectArchive(join(source, PROJECT_DOCUMENT_FILE))).ok).toBe(false)
@@ -182,7 +182,7 @@ describe('portable project archives', () => {
     symlinkSync(source, alias)
     expect((await manager.exportProjectArchive(join(alias, PROJECT_DOCUMENT_FILE))).ok).toBe(false)
     mkdirSync(join(source, '..exports'))
-    expect((await manager.exportProjectArchive(join(source, '..exports', 'copy.layertrailarchive'))).ok).toBe(false)
+    expect((await manager.exportProjectArchive(join(source, '..exports', 'copy.statekeeparchive'))).ok).toBe(false)
   })
 
   it('blocks edits during capture and refuses externally changed snapshot refs', async () => {

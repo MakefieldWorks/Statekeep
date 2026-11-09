@@ -15,7 +15,7 @@ let manager: ProjectManager
 let git: GitService
 let store: HistoryOperationStore
 beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), 'layertrail-interrupted-'))
+  root = mkdtempSync(join(tmpdir(), 'statekeep-interrupted-'))
   git = new GitService(logger as any)
   manager = new ProjectManager(git, logger as any)
   const created = await manager.createProject('Interruption Lab', root)
@@ -60,7 +60,7 @@ describe('interrupted history operations', () => {
     expect(store.pending()).toBe(true)
     const record = store.candidate().record
     expect(record.version).toBe(2)
-    const historyBeforeOpen = readFileSync(join(path, '.layertrail', 'history.json'))
+    const historyBeforeOpen = readFileSync(join(path, '.statekeep', 'history.json'))
     expect(JSON.parse(historyBeforeOpen.toString()).events.at(-1).id).toBe(record.eventId)
     const snapshotsBeforeOpen = (await git.listSnapshots(path)).map(snapshot => snapshot.id)
     interruptedFinish.mockRestore()
@@ -68,7 +68,7 @@ describe('interrupted history operations', () => {
     manager = new ProjectManager(git, logger as any)
     expect((await manager.openProject(path)).ok).toBe(true)
     expect(manager.interruptedHistoryStatus()).toEqual({ ok: true, data: { pending: false } })
-    expect(readFileSync(join(path, '.layertrail', 'history.json'))).toEqual(historyBeforeOpen)
+    expect(readFileSync(join(path, '.statekeep', 'history.json'))).toEqual(historyBeforeOpen)
     expect((await git.listSnapshots(path)).map(snapshot => snapshot.id)).toEqual(snapshotsBeforeOpen)
     expect(readdirSync(store.recoveryPath).some(name => name.endsWith('-operation.json'))).toBe(true)
     expect(manager.nodeCreate(manager.getCurrent()!.nodes[0].id, 'Editing resumed').ok).toBe(true)
@@ -84,7 +84,7 @@ describe('interrupted history operations', () => {
     expect((await manager.snapshotCreate('completed')).ok).toBe(true)
     expect(store.pending()).toBe(false)
     expect(manager.interruptedHistoryStatus()).toEqual({ ok: true, data: { pending: false } })
-    const history = JSON.parse(readFileSync(join(path, '.layertrail', 'history.json'), 'utf8'))
+    const history = JSON.parse(readFileSync(join(path, '.statekeep', 'history.json'), 'utf8'))
     expect(history.currentBaseSnapshotId).toBe('completed')
     expect(history.pendingRevertEventId).toBeNull()
   })
@@ -92,7 +92,7 @@ describe('interrupted history operations', () => {
   it('keeps a legacy v1 record in the explicit review flow', async () => {
     const current = manager.getCurrent()!
     store.begin('Legacy interrupted operation', JSON.stringify({ ...current, path: undefined }),
-      readFileSync(join(path, '.layertrail', 'history.json'), 'utf8'))
+      readFileSync(join(path, '.statekeep', 'history.json'), 'utf8'))
     manager.discardCurrentProject()
     manager = new ProjectManager(git, logger as any)
     expect((await manager.openProject(path)).ok).toBe(true)
@@ -102,7 +102,7 @@ describe('interrupted history operations', () => {
   it('fails closed on invalid v2 intent without clearing the record', () => {
     const current = manager.getCurrent()!
     store.begin('Invalid intent fixture', JSON.stringify({ ...current, path: undefined }),
-      readFileSync(join(path, '.layertrail', 'history.json'), 'utf8'), {
+      readFileSync(join(path, '.statekeep', 'history.json'), 'utf8'), {
         kind: 'snapshot-create', eventId: '01993a75-1234-7000-8000-123456789abc', targetId: 'future',
         expectedDocumentHash: 'a'.repeat(64),
       })
@@ -119,13 +119,13 @@ describe('interrupted history operations', () => {
     expect((await manager.snapshotCreate('completed')).ok).toBe(true)
     if (disagreement === 'git') execFileSync('git', ['tag', '-d', 'snapshot/completed'], { cwd: path })
     if (disagreement === 'lineage') {
-      const historyPath = join(path, '.layertrail', 'history.json')
+      const historyPath = join(path, '.statekeep', 'history.json')
       const history = JSON.parse(readFileSync(historyPath, 'utf8'))
       history.currentBaseSnapshotId = null
       writeFileSync(historyPath, JSON.stringify(history))
     }
     if (disagreement === 'timeline') {
-      const historyPath = join(path, '.layertrail', 'history.json')
+      const historyPath = join(path, '.statekeep', 'history.json')
       const history = JSON.parse(readFileSync(historyPath, 'utf8'))
       history.events.reverse()
       writeFileSync(historyPath, JSON.stringify(history))
@@ -151,13 +151,13 @@ describe('interrupted history operations', () => {
     expect((await manager.snapshotRevert({ name: 'baseline', note: 'Return to baseline' })).ok).toBe(true)
     if (disagreement === 'git') execFileSync('git', ['tag', '-f', 'snapshot/baseline', 'snapshot/later'], { cwd: path })
     if (disagreement === 'lineage') {
-      const historyPath = join(path, '.layertrail', 'history.json')
+      const historyPath = join(path, '.statekeep', 'history.json')
       const history = JSON.parse(readFileSync(historyPath, 'utf8'))
       history.pendingRevertEventId = null
       writeFileSync(historyPath, JSON.stringify(history))
     }
     if (disagreement === 'timeline') {
-      const historyPath = join(path, '.layertrail', 'history.json')
+      const historyPath = join(path, '.statekeep', 'history.json')
       const history = JSON.parse(readFileSync(historyPath, 'utf8'))
       history.events.reverse()
       writeFileSync(historyPath, JSON.stringify(history))
@@ -190,7 +190,7 @@ describe('interrupted history operations', () => {
       writeFileSync(documentPath, JSON.stringify(document))
     }
     if (disagreement === 'timeline' || disagreement === 'registry') {
-      const historyPath = join(path, '.layertrail', 'history.json')
+      const historyPath = join(path, '.statekeep', 'history.json')
       const history = JSON.parse(readFileSync(historyPath, 'utf8'))
       if (disagreement === 'timeline') history.events.reverse()
       else history.recoveryPoints = history.recoveryPoints.filter((point: { id: string }) => point.id !== recoveryPoint.id)
@@ -269,7 +269,7 @@ describe('interrupted history operations', () => {
     expect(manager.nodeCreate(manager.getCurrent()!.nodes[0].id, 'Blocked').ok).toBe(false)
     expect(manager.undo().ok).toBe(false)
     expect((await manager.snapshotCreate('blocked')).ok).toBe(false)
-    expect((await manager.exportProjectArchive(join(root, 'blocked.layertrailarchive'))).ok).toBe(false)
+    expect((await manager.exportProjectArchive(join(root, 'blocked.statekeeparchive'))).ok).toBe(false)
     const preview = review()
     expect(preview.beforeNodeCount).toBe(beforeCount)
     expect(readFileSync(join(path, PROJECT_DOCUMENT_FILE))).toEqual(diskBefore)
@@ -279,7 +279,7 @@ describe('interrupted history operations', () => {
     expect(store.pending()).toBe(false)
     expect(existsSync(preview.recoveryPath)).toBe(true)
     expect((await git.listSnapshots(path)).map(snapshot => snapshot.id)).toEqual(snapshotIds)
-    const history = JSON.parse(readFileSync(join(path, '.layertrail', 'history.json'), 'utf8'))
+    const history = JSON.parse(readFileSync(join(path, '.statekeep', 'history.json'), 'utf8'))
     expect(history.currentBaseSnapshotId).toBeNull()
     expect(history.pendingRevertEventId).toBeNull()
     expect(readdirSync(store.recoveryPath).some(name => name.endsWith('-continued.document.json'))).toBe(true)
@@ -293,7 +293,7 @@ describe('interrupted history operations', () => {
     finish.mockRestore()
     expect((await manager.acknowledgeInterruptedHistory({ token: review().token })).ok).toBe(true)
     expect((await git.listSnapshots(path)).filter(snapshot => snapshot.id === 'committed')).toHaveLength(1)
-    const history = JSON.parse(readFileSync(join(path, '.layertrail', 'history.json'), 'utf8'))
+    const history = JSON.parse(readFileSync(join(path, '.statekeep', 'history.json'), 'utf8'))
     expect(history.events.filter((event: any) => event.snapshotId === 'committed')).toHaveLength(1)
   })
 
@@ -307,24 +307,24 @@ describe('interrupted history operations', () => {
   })
 
   it('clears evidence without resetting lineage when a document write safely fails before Git changes', async () => {
-    const historyBefore = readFileSync(join(path, '.layertrail', 'history.json'))
+    const historyBefore = readFileSync(join(path, '.statekeep', 'history.json'))
     const write = vi.spyOn(manager as any, 'writeDocument').mockResolvedValue({ ok: false, error: { code: 'AUTOSAVE_WRITE_FAILED', message: 'Injected save failure' } })
     expect((await manager.snapshotCreate('not-created')).ok).toBe(false)
     write.mockRestore()
     expect(store.pending()).toBe(false)
-    expect(readFileSync(join(path, '.layertrail', 'history.json'))).toEqual(historyBefore)
+    expect(readFileSync(join(path, '.statekeep', 'history.json'))).toEqual(historyBefore)
     expect((await git.listSnapshots(path)).map(snapshot => snapshot.id)).toEqual(['baseline'])
   })
 
   it('clears evidence after a failed search rebuild rolls back the revert', async () => {
     manager.nodeCreate(manager.getCurrent()!.nodes[0].id, 'Still current')
     const current = structuredClone(manager.getCurrent())
-    const history = readFileSync(join(path, '.layertrail', 'history.json'))
+    const history = readFileSync(join(path, '.statekeep', 'history.json'))
     vi.spyOn(manager as any, 'rebuildSearchIndex').mockReturnValueOnce({ ok: false, error: { code: 'SQLITE_CAPABILITY', message: 'Injected index failure' } })
     expect((await manager.snapshotRevert({ name: 'baseline' })).ok).toBe(false)
     expect(store.pending()).toBe(false)
     expect(manager.getCurrent()).toEqual(current)
-    expect(readFileSync(join(path, '.layertrail', 'history.json'))).toEqual(history)
+    expect(readFileSync(join(path, '.statekeep', 'history.json'))).toEqual(history)
     expect((manager as any).search.query(path, 'Still')).toHaveLength(1)
   })
 
@@ -349,7 +349,7 @@ describe('interrupted history operations', () => {
     await manager.snapshotCreate('unfinished')
     write.mockRestore()
     const token = review().token
-    const historyPath = join(path, '.layertrail', 'history.json')
+    const historyPath = join(path, '.statekeep', 'history.json')
     const history = JSON.parse(readFileSync(historyPath, 'utf8'))
     history.currentBaseSnapshotId = null
     writeFileSync(historyPath, JSON.stringify(history))

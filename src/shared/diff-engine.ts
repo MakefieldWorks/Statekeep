@@ -386,7 +386,7 @@ export function diffProjects(projectA: Project, projectB: Project): DiffEntry[] 
 // not tied to any single node, so they are returned separately from the node
 // DiffEntry[] (surfaced through MergedTree.templateChanges). Without this, a
 // snapshot whose only change is a template/schema edit would compare as
-// "no changes" — Layertrail must never silently hide a real change.
+// "no changes" — Statekeep must never silently hide a real change.
 
 function fieldsEqual(a: TemplateField, b: TemplateField): boolean {
   if (a.type !== b.type) return false

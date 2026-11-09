@@ -13,15 +13,15 @@ const MAX_BYTES = 128 * 1024 * 1024
 const MAX_ARCHIVE_BYTES = 180 * 1024 * 1024
 const MAX_FILES = 2000
 type Entry = { path: string; sha256: string; data: string }
-type Archive = { format: 'layertrail-project-archive'; version: 1; createdAt: string; entries: Entry[] }
+type Archive = { format: 'statekeep-project-archive'; version: 1; createdAt: string; entries: Entry[] }
 const digest = (bytes: Buffer | string) => createHash('sha256').update(bytes).digest('hex')
 
 function allowedPath(path: string): boolean {
   if (path.split('/').some(part => /[. ]$/.test(part) || /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\.|$)/i.test(part) || part.length > 240)) return false
   return path === PROJECT_DOCUMENT_FILE || path === 'snapshots.bundle' ||
-    path === '.layertrail/history.json' || path === '.layertrail/history.backup.json' ||
-    /^\.layertrail\/history\.json\.damaged-[a-zA-Z0-9-]+$/.test(path) ||
-    (/^\.layertrail\/recovery\/[^/\\:]+$/.test(path) && !path.includes('..') && !/[\x00-\x1f]/.test(path))
+    path === '.statekeep/history.json' || path === '.statekeep/history.backup.json' ||
+    /^\.statekeep\/history\.json\.damaged-[a-zA-Z0-9-]+$/.test(path) ||
+    (/^\.statekeep\/recovery\/[^/\\:]+$/.test(path) && !path.includes('..') && !/[\x00-\x1f]/.test(path))
 }
 
 function readBounded(path: string, max = MAX_BYTES): Buffer {
@@ -44,7 +44,7 @@ export class ProjectArchive {
 
   private sourceFiles(projectPath: string): Map<string, Buffer> {
     const files = new Map<string, Buffer>()
-    const directory = join(projectPath, '.layertrail')
+    const directory = join(projectPath, '.statekeep')
     if (!existsSync(directory)) return files
     if (!lstatSync(directory).isDirectory() || lstatSync(directory).isSymbolicLink()) throw new Error('Linked metadata directories cannot be archived')
     for (const name of readdirSync(directory).sort()) {
@@ -52,13 +52,13 @@ export class ProjectArchive {
         const recovery = join(directory, name)
         if (!lstatSync(recovery).isDirectory() || lstatSync(recovery).isSymbolicLink()) throw new Error('Linked recovery directories cannot be archived')
         for (const file of readdirSync(recovery).sort()) {
-          const key = `.layertrail/recovery/${file}`
+          const key = `.statekeep/recovery/${file}`
           if (!allowedPath(key)) throw new Error(`Unsupported recovery filename: ${file}`)
           files.set(key, readBounded(join(recovery, file)))
           this.checkSize(files)
         }
       } else if (name === 'history.json' || name === 'history.backup.json' || name.startsWith('history.json.damaged-')) {
-        const key = `.layertrail/${name}`
+        const key = `.statekeep/${name}`
         if (!allowedPath(key)) throw new Error(`Unsupported history filename: ${name}`)
         files.set(key, readBounded(join(directory, name)))
         this.checkSize(files)
@@ -79,7 +79,7 @@ export class ProjectArchive {
     const files = this.sourceFiles(projectPath)
     const sourceToken = this.fingerprint(files)
     const refs = await this.git.archiveRefs(projectPath)
-    const scratch = mkdtempSync(join(tmpdir(), 'layertrail-archive-'))
+    const scratch = mkdtempSync(join(tmpdir(), 'statekeep-archive-'))
     try {
       const bundle = join(scratch, 'snapshots.bundle')
       await this.git.createArchiveBundle(projectPath, bundle)
@@ -89,11 +89,11 @@ export class ProjectArchive {
       files.set(PROJECT_DOCUMENT_FILE, Buffer.from(currentDocument))
       files.set('snapshots.bundle', readBounded(bundle))
       this.checkSize(files)
-      const archive: Archive = { format: 'layertrail-project-archive', version: 1, createdAt: new Date().toISOString(),
+      const archive: Archive = { format: 'statekeep-project-archive', version: 1, createdAt: new Date().toISOString(),
         entries: [...files].map(([path, bytes]) => ({ path, sha256: digest(bytes), data: bytes.toString('base64') })) }
       const output = JSON.stringify(archive)
       if (Buffer.byteLength(output) > MAX_ARCHIVE_BYTES) throw new Error('Encoded archive exceeds its size limit')
-      const candidatePath = join(scratch, 'candidate.layertrailarchive')
+      const candidatePath = join(scratch, 'candidate.statekeeparchive')
       writeFileSync(candidatePath, output, { flag: 'wx' })
       // Verify the encoded container and an isolated reconstruction before
       // publishing, using exactly the same decoder as an imported archive.
@@ -109,7 +109,7 @@ export class ProjectArchive {
   private decode(path: string): { archive: Archive; files: Map<string, Buffer>; token: string } {
     const bytes = readBounded(path, MAX_ARCHIVE_BYTES)
     const archive = JSON.parse(bytes.toString('utf8')) as Archive
-    if (!archive || archive.format !== 'layertrail-project-archive' || archive.version !== 1 ||
+    if (!archive || archive.format !== 'statekeep-project-archive' || archive.version !== 1 ||
         typeof archive.createdAt !== 'string' || !Number.isFinite(Date.parse(archive.createdAt)) ||
         !Array.isArray(archive.entries) || archive.entries.length > MAX_FILES) throw new Error('Invalid or unsupported project archive')
     const files = new Map<string, Buffer>()
@@ -147,8 +147,8 @@ export class ProjectArchive {
       const saved = this.parseProject(await this.git.readSnapshotDocument(destination, snapshot.id))
       if (saved.id !== project.id) throw new Error(`Snapshot belongs to another project: ${snapshot.id}`)
     }
-    const historyBytes = files.get('.layertrail/history.json')
-    if (!historyBytes && files.has('.layertrail/history.backup.json')) throw new Error('Restore missing history metadata from its backup before exporting an archive')
+    const historyBytes = files.get('.statekeep/history.json')
+    if (!historyBytes && files.has('.statekeep/history.backup.json')) throw new Error('Restore missing history metadata from its backup before exporting an archive')
     if (historyBytes) {
       const history = migrateSnapshotHistory(JSON.parse(historyBytes.toString('utf8')))
       const refs = [...Object.keys(history.snapshots), ...Object.values(history.snapshots).map(meta => meta.basedOnSnapshotId),
@@ -167,11 +167,11 @@ export class ProjectArchive {
 
   async inspect(path: string): Promise<ProjectArchivePreview> {
     const { archive, files, token } = this.decode(path)
-    const scratch = mkdtempSync(join(tmpdir(), 'layertrail-archive-review-'))
+    const scratch = mkdtempSync(join(tmpdir(), 'statekeep-archive-review-'))
     try {
       const result = await this.materialize(files, scratch)
       return { token, projectName: result.project.name, createdAt: archive.createdAt, snapshotCount: result.snapshotCount,
-        recoveryFileCount: [...files.keys()].filter(path => path.startsWith('.layertrail/recovery/')).length, fileCount: files.size }
+        recoveryFileCount: [...files.keys()].filter(path => path.startsWith('.statekeep/recovery/')).length, fileCount: files.size }
     } finally { await removeGitFolder(scratch) }
   }
 
@@ -180,7 +180,7 @@ export class ProjectArchive {
     if (token !== actualToken) throw new Error('Archive changed. Review it again before restoring.')
     // mkdtemp atomically reserves a new folder. No existing destination can be
     // overwritten, and failures remove only the folder this operation created.
-    const destination = mkdtempSync(join(parent, 'Layertrail-restored-'))
+    const destination = mkdtempSync(join(parent, 'Statekeep-restored-'))
     try {
       await this.materialize(files, destination)
       return destination

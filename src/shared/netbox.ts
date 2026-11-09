@@ -2,7 +2,7 @@
 // Django `dumpdata` JSON: a flat array of `{ model, pk, fields }` where relations
 // are integer foreign keys (a device points at its site/rack/device_type by pk).
 //
-// This adapter resolves those relations into Layertrail's hierarchy —
+// This adapter resolves those relations into Statekeep's hierarchy —
 //   Site → Location → Rack → Device
 // — with device/rack/site attributes as TYPED properties bound to auto-generated
 // templates. Like the CSV planner (import.ts), it is the single source of truth

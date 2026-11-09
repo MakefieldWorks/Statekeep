@@ -1,6 +1,6 @@
 # Scoped Comparison
 
-Layertrail comparisons normally review the whole project. When a room, rack,
+Statekeep comparisons normally review the whole project. When a room, rack,
 device, or other non-root node is selected, the Compare controls also offer a
 Selected subtree option.
 
