@@ -200,7 +200,7 @@ Based on Archon’s strongest ideas, Statekeep should likely preserve:
 
 ```text
 myproject/
-  Statekeep.statekeep            # single canonical file, all nodes inline
+  Statekeep.statekeep              # single canonical file, all nodes inline
   .git/                            # auto-initialized, hidden behind snapshot UX
   .statekeep/
     index/search.db                # derived, rebuildable SQLite + FTS5
