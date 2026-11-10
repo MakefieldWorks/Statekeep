@@ -19,7 +19,7 @@
   --theme-control-primary: 41 37 36;
   --theme-control-primary-hover: 68 64 60;
   --theme-text-disabled: 214 211 209;
-  --theme-text-faint: 168 162 158;
+  --theme-text-faint: 113 106 101;
   --theme-text-muted: 120 113 108;
   --theme-text-secondary: 87 83 78;
   --theme-text-body: 68 64 60;
@@ -193,4 +193,47 @@ body {
    deliberately still: motion is reserved for structural changes in the tree. */
 html[data-window-focused='false'] #app {
   filter: saturate(0.68) brightness(0.985);
+}
+
+/* A visible keyboard focus indicator survives theme selection and custom rings. */
+:focus-visible {
+  outline: 2px solid rgb(var(--theme-text-primary));
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  /* Inline theme tokens remain the source for color; use emphasis text/borders
+     for subtle labels, controls, and selected states when contrast is requested. */
+  [class*='text-stone-400'], [class*='text-stone-500'] {
+    color: rgb(var(--theme-text-body));
+  }
+  button, input, select, textarea, [role='dialog'] {
+    border-color: rgb(var(--theme-border-emphasis));
+  }
+  [aria-selected='true'] { outline: 2px solid currentColor; outline-offset: -2px; }
+}
+
+@media (forced-colors: active) {
+  :focus-visible { outline: 2px solid Highlight; }
+  [role='treeitem'][aria-selected='true'] {
+    background: Highlight !important;
+    color: HighlightText !important;
+    outline: 2px solid Highlight;
+    forced-color-adjust: none;
+  }
+  [role='treeitem'][aria-selected='true'] * { color: inherit !important; }
+  button, input, select, textarea, [role='dialog'], dialog {
+    border: 1px solid ButtonText;
+  }
+  [role='treeitem'][data-row-ghost='true'] { opacity: 1; }
+  html[data-window-focused='false'] #app { filter: none; }
 }

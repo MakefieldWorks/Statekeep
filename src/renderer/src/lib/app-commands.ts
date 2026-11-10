@@ -62,12 +62,19 @@ export function buildMenuCommandState(ctx: CommandContext): MenuCommandState {
   const selectedEditableChild = selectedLiveNode !== null && selectedLiveNode.parentId !== null
   const compareLoaded = hasOpenProject && ctx.compareMode && ctx.compareLoaded
   const canMutateSelectedChild = Boolean(selectedEditableChild) && !ctx.textEditing &&
-    !ctx.importDialogOpen && !ctx.templateManagerOpen && !ctx.moveToNodeId && !ctx.addingChildTo &&
+    !ctx.importDialogOpen && !ctx.templateManagerOpen && !ctx.archiveOpen && !ctx.moveToNodeId && !ctx.addingChildTo &&
     !ctx.snapshotComparing && !ctx.revertDialogSnapshotName && !ctx.recoveryDialogPoint
   const canUndo = canUndoProject(ctx)
 
   state['project:undo'] = ctx.textEditing || (canUndo && ctx.editHistory.undoLabel !== null)
   state['project:redo'] = ctx.textEditing || (canUndo && ctx.editHistory.redoLabel !== null)
+  // Native accelerators can run even while the DOM background is inert. Do
+  // not open a second overlay, switch/close the project, or mutate selection
+  // behind the current dialog. Field-level native Undo/Redo stays available.
+  const dialogOpen = ctx.archiveOpen || ctx.importDialogOpen || ctx.templateManagerOpen ||
+    ctx.batchDialogOpen || ctx.duplicateNodeId !== null || ctx.moveToNodeId !== null ||
+    ctx.revertDialogSnapshotName !== null || ctx.recoveryDialogPoint !== null
+  if (dialogOpen) return state
   state['project:new'] = ctx.appState === 'welcome' && !ctx.hasProject
   state['project:open'] = ctx.appState !== 'loading' && ctx.appState !== 'creating' && !ctx.creating && !projectBusy
   state['project:save'] = canUseProject
@@ -76,12 +83,17 @@ export function buildMenuCommandState(ctx: CommandContext): MenuCommandState {
   state['project:templates'] = canEditProject
   state['project:snapshots'] = canUseProject
   state['project:search'] = canUseProject && !ctx.compareMode
+  state['snapshot:create'] = canEditProject && !ctx.importDialogOpen && !ctx.templateManagerOpen && !ctx.archiveOpen && !ctx.moveToNodeId && !ctx.addingChildTo && !ctx.snapshotComparing && !ctx.revertDialogSnapshotName && !ctx.recoveryDialogPoint
+  state['compare:start'] = canUseProject && !ctx.compareMode && !ctx.importDialogOpen && !ctx.templateManagerOpen && !ctx.archiveOpen && !ctx.moveToNodeId && !ctx.addingChildTo && !ctx.snapshotComparing && !ctx.revertDialogSnapshotName && !ctx.recoveryDialogPoint
   state['compare:exit'] = compareLoaded && !projectBusy
   state['report:copyMarkdown'] = compareLoaded && !projectBusy
   state['report:exportMarkdown'] = compareLoaded && !projectBusy
   state['report:exportCsv'] = compareLoaded && !projectBusy
   state['report:exportHtml'] = compareLoaded && !projectBusy
-  state['node:addChild'] = selectedLiveNode !== null
+  state['node:addChild'] = selectedLiveNode !== null && !ctx.textEditing && !ctx.importDialogOpen && !ctx.templateManagerOpen && !ctx.archiveOpen && !ctx.moveToNodeId && !ctx.addingChildTo && !ctx.snapshotComparing && !ctx.revertDialogSnapshotName && !ctx.recoveryDialogPoint
+  state['node:addSibling'] = canMutateSelectedChild
+  state['node:moveUp'] = canMutateSelectedChild
+  state['node:moveDown'] = canMutateSelectedChild
   state['node:rename'] = selectedLiveNode !== null
   state['node:duplicate'] = canMutateSelectedChild
   state['node:moveTo'] = canMutateSelectedChild

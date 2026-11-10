@@ -29,8 +29,13 @@ to the target computer if necessary, close Statekeep, and install it manually:
 1. **macOS:** Open the DMG for the computer's architecture (arm64 for Apple
    silicon; x64 for Intel, which is not officially supported) and replace the
    existing Statekeep app in Applications.
-2. **Windows:** Run the x64 NSIS installer. Keep the project folders where they
-   are; the installer is separate from project data.
+2. **Windows:** Run the x64 NSIS installer. Choose current user (the default,
+   no admin rights) or everyone (requires elevation), destination, and whether
+   to create a desktop shortcut. Start menu access is always provided. Existing
+   Statekeep installs should retain their install mode and folder; keep project
+   folders separate. Legacy Manifest is a different installed product, so back
+   up its projects and follow the documented project migration rather than
+   assuming an in-place installer upgrade.
 3. **Linux** (not officially supported yet): Choose the asset for the installed
    distribution: replace the x64 AppImage, make it executable if needed, and
    launch it; or install the x64 `.deb` on Ubuntu/Debian-family systems or the

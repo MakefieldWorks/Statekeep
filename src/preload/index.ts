@@ -2,7 +2,7 @@
 // Exposes a typed, minimal API surface via contextBridge.
 // Nothing outside this whitelist is accessible from the renderer.
 
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import { IPC } from '../shared/ipc'
 import type { AppPreferences, StatekeepAPI, WorkspaceSettings } from '../shared/ipc'
 import { isMenuCommandId } from '../shared/menu-commands'
@@ -26,6 +26,7 @@ const api: StatekeepAPI = {
     inspect: () => ipcRenderer.invoke(IPC.ARCHIVE_INSPECT),
     restore: request => ipcRenderer.invoke(IPC.ARCHIVE_RESTORE, request),
   },
+  files: { pathForFile: (file: File) => webUtils.getPathForFile(file) },
   platform: desktopChromeForPlatform(process.platform),
 
   project: {
@@ -33,6 +34,8 @@ const api: StatekeepAPI = {
       ipcRenderer.invoke(IPC.PROJECT_CREATE, { name, parentPath }),
     open: (path) =>
       ipcRenderer.invoke(IPC.PROJECT_OPEN, { path }),
+    createStarter: (starterId, name, parentPath) =>
+      ipcRenderer.invoke(IPC.PROJECT_CREATE_STARTER, { starterId, name, parentPath }),
     openExample: () =>
       ipcRenderer.invoke(IPC.PROJECT_OPEN_EXAMPLE),
     save: () =>

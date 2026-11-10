@@ -27,6 +27,13 @@ export interface NormalRow {
   isFirst: boolean
   /** True if this node is last among its siblings (used by context menu Move Down). */
   isLast: boolean
+  /**
+   * 1-based position among the node's real siblings and the real sibling
+   * count, computed before search filtering so aria-posinset/aria-setsize
+   * describe the project, not the filtered view.
+   */
+  siblingPosition: number
+  siblingCount: number
 }
 
 /** A live node in compare mode that has one or more changes relative to the other snapshot. */
@@ -40,6 +47,8 @@ export interface DecoratedRow {
   expanded: boolean
   isFirst: boolean
   isLast: boolean
+  siblingPosition: number
+  siblingCount: number
   status: RowStatus
   badges: RowBadge[]
 }
@@ -64,6 +73,8 @@ export interface GhostRow {
   node: ProjectNode  // the removed/moved node's data (from snapshot A)
   hasChildren: false
   expanded: false
+  siblingPosition: number
+  siblingCount: number
   status: 'removed' | 'moved-from'
 }
 
@@ -129,6 +140,8 @@ export function flattenTree(
           node: treeNode.node,
           hasChildren: false,
           expanded: false,
+          siblingPosition: siblingIndex + 1,
+          siblingCount,
           status: merged.status as 'removed' | 'moved-from',
         })
         return // never recurse into ghost children
@@ -149,6 +162,8 @@ export function flattenTree(
           expanded: isExpanded,
           isFirst: siblingIndex === 0,
           isLast: siblingIndex === siblingCount - 1,
+          siblingPosition: siblingIndex + 1,
+          siblingCount,
         })
       } else {
         result.push({
@@ -161,6 +176,8 @@ export function flattenTree(
           expanded: isExpanded,
           isFirst: siblingIndex === 0,
           isLast: siblingIndex === siblingCount - 1,
+          siblingPosition: siblingIndex + 1,
+          siblingCount,
           status: rowStatus,
           badges: buildBadges(merged),
         })
@@ -177,7 +194,17 @@ export function flattenTree(
   }
 
   // Normal mode — no compare data.
-  function walk(treeNode: TreeNode, siblingIndex: number, siblingCount: number): void {
+  //
+  // siblingIndex/siblingCount are positions among the visible (filtered)
+  // siblings and drive isFirst/isLast; realIndex/realCount are positions among
+  // all siblings in the project and drive the ARIA position metadata.
+  function walk(
+    treeNode: TreeNode,
+    siblingIndex: number,
+    siblingCount: number,
+    realIndex: number,
+    realCount: number,
+  ): void {
     if (options.includeIds && !options.includeIds.has(treeNode.node.id)) return
 
     const hasChildren = treeNode.children.length > 0
@@ -199,16 +226,21 @@ export function flattenTree(
       expanded: isExpanded,
       isFirst: siblingIndex === 0,
       isLast: siblingIndex === siblingCount - 1,
+      siblingPosition: realIndex + 1,
+      siblingCount: realCount,
     })
 
     if (renderedHasChildren && isExpanded) {
-      for (let i = 0; i < visibleChildren.length; i++) {
-        walk(visibleChildren[i], i, visibleChildren.length)
+      let visibleIndex = 0
+      for (let i = 0; i < treeNode.children.length; i++) {
+        const child = treeNode.children[i]
+        if (options.includeIds && !options.includeIds.has(child.node.id)) continue
+        walk(child, visibleIndex++, visibleChildren.length, i, treeNode.children.length)
       }
     }
   }
 
-  walk(root, 0, 1)
+  walk(root, 0, 1, 0, 1)
   return result
 }
 

@@ -25,6 +25,7 @@ function templateFor(
     reportIssue: () => { calls.push('reportIssue') },
     openLogsFolder: () => { calls.push('openLogsFolder') },
     copyDiagnostics: () => { calls.push('copyDiagnostics') },
+    exportDiagnostics: () => { calls.push('exportDiagnostics') },
   })
 }
 
@@ -79,6 +80,17 @@ describe('buildAppMenuTemplate', () => {
 
     expect(commands.map(item => item.id).sort()).toEqual([...MENU_COMMAND_IDS].sort())
     expect(commands.every(item => item.enabled === false)).toBe(true)
+  })
+
+  it('uses the window close role and gives project close a separate shortcut', () => {
+    for (const platform of ['darwin', 'win32', 'linux'] as const) {
+      const all = flatten(templateFor(platform))
+      expect(all.some(item => item.role === 'close')).toBe(true)
+      expect(all.find(item => item.id === 'project:close')?.accelerator).toBe('CommandOrControl+Shift+W')
+      for (const id of ['node:addChild', 'node:addSibling', 'node:moveUp', 'node:moveDown', 'node:moveTo', 'node:delete', 'snapshot:create', 'compare:start']) {
+        expect(all.find(item => item.id === id)?.accelerator).toBeTruthy()
+      }
+    }
   })
 
   it('offers HTML, Markdown, and CSV report exports', () => {
@@ -145,6 +157,7 @@ describe('buildAppMenuTemplate', () => {
       'separator',
       'Open Logs Folder',
       'Copy Diagnostics',
+      'Export Diagnostics Bundle...',
       'separator',
       'about',
     ])
@@ -163,6 +176,7 @@ describe('buildAppMenuTemplate', () => {
       'separator',
       'Open Logs Folder',
       'Copy Diagnostics',
+      'Export Diagnostics Bundle...',
     ])
   })
 
@@ -182,6 +196,7 @@ describe('buildAppMenuTemplate', () => {
       'reportIssue',
       'openLogsFolder',
       'copyDiagnostics',
+      'exportDiagnostics',
     ])
   })
 })

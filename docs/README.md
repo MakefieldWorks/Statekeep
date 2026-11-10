@@ -22,7 +22,12 @@ Statekeep is a local-first desktop app for managing structured, hierarchical pro
 | [TODOS.md](TODOS.md) | Active and deferred product/engineering work |
 | [PILOT_DOGFOOD.md](PILOT_DOGFOOD.md) | Pilot-readiness dogfood checklist and import decision gate |
 | [PILOT_DOGFOOD_2026-09-26.md](PILOT_DOGFOOD_2026-09-26.md) | Recorded macOS packaged pilot exercise and remaining handoff |
+| [INSTALLER_QA.md](INSTALLER_QA.md) | Repeatable supported-platform installer matrix and evidence template |
 | [RELEASING.md](RELEASING.md) | Signed release builds, signing secrets, unsigned local builds, and cutting a release |
+| [PROJECT_STARTERS.md](PROJECT_STARTERS.md) | Bundled use-case starters, exercises, catalog authoring, and verification |
+| [SECURITY.md](SECURITY.md) | Renderer trust boundaries, denied permissions, and packaged Electron fuses |
+| [ACCESSIBILITY_QA.md](ACCESSIBILITY_QA.md) | Keyboard, focus, contrast/motion behavior, automated checks, and manual QA |
+| [CRASH_RECOVERY.md](CRASH_RECOVERY.md) | Renderer recovery, local-only crash policy, and redacted diagnostics export |
 | [OFFLINE_HELP.md](OFFLINE_HELP.md) | Bundled offline Help: website docs as the one source, refreshing the bundle, and how the app serves it |
 | [UPDATES.md](UPDATES.md) | Manual alpha/beta update flow, channels, offline installation, and downgrade limits |
 | [UNDO_REDO.md](UNDO_REDO.md) | Project editing history, text undo, and snapshot/session boundaries |

@@ -1,6 +1,7 @@
 <svelte:options runes />
 
 <script lang="ts">
+  import { modalFocus } from '../lib/modal-focus'
   import type { RecoveryPoint } from '../../../shared/types'
 
   interface Props {
@@ -20,7 +21,7 @@
 
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Escape' && !applying) onCancel()
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) onConfirm()
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !applying) { e.preventDefault(); onConfirm() }
   }
 </script>
 
@@ -34,6 +35,7 @@
   <div
     class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 flex flex-col overflow-hidden"
     role="dialog"
+    use:modalFocus
     aria-modal="true"
     aria-label="Recover current project"
     data-testid="recovery-dialog"

@@ -17,6 +17,7 @@ export interface AppMenuTemplateOptions {
   reportIssue(): void
   openLogsFolder(): void
   copyDiagnostics(): void
+  exportDiagnostics(): void
 }
 
 function commandItem(command: MenuCommandId, dispatch: (command: MenuCommandId) => void): MenuItemConstructorOptions {
@@ -92,12 +93,14 @@ export function buildAppMenuTemplate(options: AppMenuTemplateOptions): MenuItemC
       commandItem('project:new', options.dispatch),
       commandItem('project:open', options.dispatch),
       {
+        id: 'open-recent-projects',
         label: 'Open Recent',
         submenu: recentProjectsSubmenu(options),
       },
       separator(),
       commandItem('project:save', options.dispatch),
       commandItem('project:close', options.dispatch),
+      { role: 'close' },
       separator(),
       commandItem('project:import', options.dispatch),
       separator(),
@@ -173,10 +176,16 @@ export function buildAppMenuTemplate(options: AppMenuTemplateOptions): MenuItemC
     label: 'Project',
     submenu: [
       commandItem('node:addChild', options.dispatch),
+      commandItem('node:addSibling', options.dispatch),
       commandItem('node:rename', options.dispatch),
       commandItem('node:duplicate', options.dispatch),
       commandItem('node:moveTo', options.dispatch),
+      commandItem('node:moveUp', options.dispatch),
+      commandItem('node:moveDown', options.dispatch),
       commandItem('node:delete', options.dispatch),
+      separator(),
+      commandItem('snapshot:create', options.dispatch),
+      commandItem('compare:start', options.dispatch),
       separator(),
       commandItem('history:reindex', options.dispatch),
     ],
@@ -226,6 +235,10 @@ export function buildAppMenuTemplate(options: AppMenuTemplateOptions): MenuItemC
       {
         label: 'Copy Diagnostics',
         click: options.copyDiagnostics,
+      },
+      {
+        label: 'Export Diagnostics Bundle...',
+        click: options.exportDiagnostics,
       },
       ...(isMac ? [] : [separator(), { role: 'about' } satisfies MenuItemConstructorOptions]),
     ],

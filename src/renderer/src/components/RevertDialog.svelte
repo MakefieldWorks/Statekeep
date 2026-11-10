@@ -1,6 +1,7 @@
 <svelte:options runes />
 
 <script lang="ts">
+  import { modalFocus } from '../lib/modal-focus'
   interface Props {
     snapshotName: string
     noteRequired: boolean
@@ -36,6 +37,7 @@
   <div
     class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 flex flex-col overflow-hidden"
     role="dialog"
+    use:modalFocus
     aria-modal="true"
     aria-label={`Revert current project to ${snapshotName}`}
     data-testid="revert-dialog"

@@ -88,6 +88,39 @@ export function validateNodeName(name: string): ValidationResult {
   return { valid: true }
 }
 
+// Characters Windows forbids in file names, plus C0 control characters.
+const PROJECT_DIR_FORBIDDEN_RE = /[<>:"|?*\x00-\x1f]/
+// Device names Windows reserves regardless of extension (CON, CON.txt, ...).
+const WINDOWS_RESERVED_NAME_RE = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i
+
+/**
+ * A project name becomes the project's folder name, so it must be a single
+ * portable path segment on every supported OS. Every project-creation path
+ * (blank, starter, sample) goes through ProjectManager.createProject, which
+ * enforces this.
+ */
+export function validateProjectDirectoryName(name: unknown): ValidationResult {
+  if (typeof name !== 'string') return { valid: false, message: 'Project name must be text' }
+  const base = validateNodeName(name)
+  if (!base.valid) return { valid: false, message: base.message?.replace('Node name', 'Project name') }
+  if (name !== name.trim()) {
+    return { valid: false, message: 'Project names cannot start or end with spaces' }
+  }
+  if (name === '.' || name === '..') {
+    return { valid: false, message: 'Project names cannot be "." or ".."' }
+  }
+  if (PROJECT_DIR_FORBIDDEN_RE.test(name)) {
+    return { valid: false, message: 'Project names cannot contain < > : " | ? * or control characters' }
+  }
+  if (/[. ]$/.test(name)) {
+    return { valid: false, message: 'Project names cannot end with a period or space' }
+  }
+  if (WINDOWS_RESERVED_NAME_RE.test(name)) {
+    return { valid: false, message: 'That project name is reserved by Windows' }
+  }
+  return { valid: true }
+}
+
 export function validateDuplicateNodeName(name: string, siblingNames: string[]): ValidationResult {
   const valid = validateNodeName(name)
   if (!valid.valid) return valid

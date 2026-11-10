@@ -94,7 +94,7 @@ import {
   migrateSnapshotHistory,
   type SnapshotHistoryState,
 } from '../shared/snapshot-history-migration'
-import { validateSnapshotName, validateSnapshotDescription } from '../shared/validation'
+import { validateProjectDirectoryName, validateSnapshotName, validateSnapshotDescription } from '../shared/validation'
 import { isCurrentRef } from '../shared/snapshot-ref'
 import { buildMergedTree, type MergedTree } from '../shared/merged-tree'
 import { isReportFormat } from '../shared/report'
@@ -219,6 +219,8 @@ export class ProjectManager {
   async createProject(name: string, parentPath: string): Promise<Result<Project>> {
     if (this.historyOperationInProgress) return err(ErrorCode.VALIDATION_FAILED, 'Wait for the history operation to finish before switching projects.')
     if (this.archiveBusy) return err(ErrorCode.VALIDATION_FAILED, 'Wait for the archive operation to finish.')
+    const nameCheck = validateProjectDirectoryName(name)
+    if (!nameCheck.valid) return err(ErrorCode.VALIDATION_FAILED, nameCheck.message ?? 'Invalid project name.')
     const projectPath = join(parentPath, name)
     if (findProjectDocument(projectPath)) return err(ErrorCode.PROJECT_EXISTS, 'A project already exists in this folder.')
     try {

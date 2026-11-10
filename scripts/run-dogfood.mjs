@@ -4,6 +4,7 @@ import { execFileSync } from 'child_process'
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'
 import { fileURLToPath } from 'url'
+import { prepareDogfoodPackage } from './dogfood-package.mjs'
 
 const ROOT_DIR = fileURLToPath(new URL('..', import.meta.url))
 
@@ -68,11 +69,14 @@ if (packagedExecutable && !existsSync(packagedExecutable)) {
   process.exit(1)
 }
 
+const testPackage = packagedExecutable ? await prepareDogfoodPackage(packagedExecutable) : null
 const dogfoodEnv = { ...process.env, STATEKEEP_DOGFOOD_PROJECT: projectPath }
-if (packagedExecutable) dogfoodEnv.STATEKEEP_DOGFOOD_EXECUTABLE = packagedExecutable
-else delete dogfoodEnv.STATEKEEP_DOGFOOD_EXECUTABLE
+if (testPackage) {
+  dogfoodEnv.STATEKEEP_DOGFOOD_EXECUTABLE = testPackage.executable
+  console.info('Running packaged dogfood against a disposable copy with inspector enabled; release artifacts remain hardened.')
+} else delete dogfoodEnv.STATEKEEP_DOGFOOD_EXECUTABLE
 
-execFileSync(
+try { execFileSync(
   join(ROOT_DIR, 'node_modules', '.bin', 'playwright'),
   ['test', 'tests/e2e/dogfood.e2e.ts'],
   {
@@ -80,4 +84,4 @@ execFileSync(
     env: dogfoodEnv,
     stdio: 'inherit',
   },
-)
+) } finally { testPackage?.cleanup() }

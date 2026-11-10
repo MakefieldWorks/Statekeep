@@ -3,6 +3,7 @@ import {
   validateSnapshotName,
   validateSnapshotDescription,
   validateNodeName,
+  validateProjectDirectoryName,
   validatePropertyKey,
   validatePropertyValue,
 } from '@shared/validation'
@@ -69,6 +70,22 @@ describe('validateSnapshotDescription', () => {
 })
 
 // ─── validateNodeName ─────────────────────────────────────────────────────────
+
+describe('validateProjectDirectoryName', () => {
+  it('accepts ordinary project names', () => {
+    expect(validateProjectDirectoryName('Test Lab').valid).toBe(true)
+    expect(validateProjectDirectoryName('Statekeep Sample Lab').valid).toBe(true)
+    expect(validateProjectDirectoryName('rack-2.v1').valid).toBe(true)
+    expect(validateProjectDirectoryName('Console').valid).toBe(true)
+  })
+
+  it('rejects names that are not a single portable folder name', () => {
+    for (const name of ['', '   ', ' Lab', 'Lab ', 'Lab.', '.', '..', '../Lab', 'a/b', 'a\\b', 'a:b', 'a?b', 'a*b', 'a<b', 'a|b', 'a"b', 'a\u0001b', 'CON', 'con.txt', 'LPT1', 'x'.repeat(256)]) {
+      expect(validateProjectDirectoryName(name).valid, JSON.stringify(name)).toBe(false)
+    }
+    expect(validateProjectDirectoryName(42).valid).toBe(false)
+  })
+})
 
 describe('validateNodeName', () => {
   it('accepts normal names', () => {

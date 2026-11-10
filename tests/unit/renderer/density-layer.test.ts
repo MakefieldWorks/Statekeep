@@ -37,6 +37,8 @@ function normal(id: string, depth = 0, opts: { expanded?: boolean; hasChildren?:
     expanded: opts.expanded ?? false,
     isFirst: false,
     isLast: false,
+    siblingPosition: 1,
+    siblingCount: 1,
   }
 }
 
@@ -51,6 +53,8 @@ function decorated(id: string, depth = 0): VisibleRow {
     expanded: false,
     isFirst: false,
     isLast: false,
+    siblingPosition: 1,
+    siblingCount: 1,
     status: 'property-changed',
     badges: [{ kind: 'property-changed', label: 'Changed', severity: 'Medium' }],
   }
@@ -64,6 +68,8 @@ function ghost(originalId: string, depth = 0): VisibleRow {
     node: projectNode(originalId),
     hasChildren: false,
     expanded: false,
+    siblingPosition: 1,
+    siblingCount: 1,
     status: 'removed',
   }
 }

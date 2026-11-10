@@ -15,6 +15,8 @@ import {
 import { resolveProjectOpenTarget } from './project-open-target'
 import { collectProjectOpenTargets, isDefaultAppPathTarget, type LaunchArgumentEnvironment } from './launch-arguments'
 import { openExampleProject } from './example-project'
+import { createStarterProject } from './project-starters'
+import { secureIpcMain, denySessionPermissions, denyWebviews } from './security'
 import { isTrustedRendererNavigationUrl } from './renderer-navigation'
 import { RecentProjectsStore, getRecentDocumentPath } from './recent-projects'
 import {
@@ -27,6 +29,8 @@ import {
 import { desktopChromeForPlatform } from '../shared/desktop-chrome'
 import { isAppearanceMode, resolveTheme } from '../shared/theme'
 import { buildDiagnostics } from './diagnostics'
+import { buildDiagnosticsBundle } from './diagnostics-export'
+import { installRendererRecovery } from './renderer-recovery'
 import {
   ensureFinalProjectSave,
   finalSaveFailureActionForResponse,
@@ -62,10 +66,18 @@ const SETTINGS_WINDOW_HEIGHT = 560
 const e2eBackground = isE2eBackground(process.env)
 
 registerHelpScheme()
+// Install before any BrowserWindow or partition is created, including Help.
+app.on('session-created', denySessionPermissions)
+app.on('web-contents-created', (_event, contents) => denyWebviews(contents))
 
 // ─── Window ──────────────────────────────────────────────────────────────────
 
 let mainWindow: BrowserWindow | null = null
+let rendererRecovery: ReturnType<typeof installRendererRecovery> | null = null
+app.on('child-process-gone', (_event, details) => {
+  if (rendererRecovery) rendererRecovery.childProcessGone(details)
+  else appLogger.error('child process gone', { type: details.type, reason: details.reason, exitCode: details.exitCode })
+})
 let settingsWindow: BrowserWindow | null = null
 const pendingOpenTargets: string[] = []
 let ownsSingleInstanceLock = false
@@ -113,6 +125,12 @@ function createWindow(): BrowserWindow {
 
   if (!e2eBackground) win.once('ready-to-show', () => win.show())
   configureRendererNavigation(win)
+  rendererRecovery = installRendererRecovery({
+    window: win, logger: appLogger,
+    hasProject: () => projectManager.getCurrent() !== null,
+    saveProject: () => projectManager.saveProject(),
+    showDialog: (options) => dialog.showMessageBox(win, options),
+  })
   win.on('focus', () => { projectManager.checkExternalDocument(); notifyWindowFocusChanged(win, true) })
   win.on('blur', () => notifyWindowFocusChanged(win, false))
   win.webContents.on('did-finish-load', () => notifyWindowFocusChanged(win, win.isFocused()))
@@ -129,13 +147,13 @@ function createWindow(): BrowserWindow {
     void closeWindowAfterFinalSave(win)
   })
   win.on('closed', () => {
-    if (mainWindow === win) mainWindow = null
+    if (mainWindow === win) { mainWindow = null; rendererRecovery = null }
     // Elsewhere the app quits with its last window, so Help must not keep it
     // running once the project window is gone.
     if (process.platform !== 'darwin') closeHelpWindow()
   })
 
-  if (process.env['ELECTRON_RENDERER_URL']) {
+  if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
     win.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
     win.loadFile(join(__dirname, '../renderer/index.html'))
@@ -193,7 +211,7 @@ function createSettingsWindow(): BrowserWindow {
     if (settingsWindow === win) settingsWindow = null
   })
 
-  if (process.env['ELECTRON_RENDERER_URL']) {
+  if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
     const settingsUrl = new URL(process.env['ELECTRON_RENDERER_URL'])
     settingsUrl.searchParams.set('settings', '1')
     void win.loadURL(settingsUrl.toString())
@@ -270,16 +288,25 @@ nativeTheme.on('updated', () => {
 // ─── IPC handlers ────────────────────────────────────────────────────────────
 
 function registerIpcHandlers(): void {
-  ipcMain.handle(IPC.HISTORY_OPERATION_STATUS, () => projectManager.interruptedHistoryStatus())
-  ipcMain.handle(IPC.HISTORY_OPERATION_REVIEW, () => projectManager.reviewInterruptedHistory())
-  ipcMain.handle(IPC.HISTORY_OPERATION_ACKNOWLEDGE, (_, request: unknown) => projectManager.acknowledgeInterruptedHistory(request))
-  ipcMain.handle(IPC.HISTORY_OPERATION_EVIDENCE_PREVIEW, () => projectManager.interruptedHistoryEvidencePreview())
-  ipcMain.handle(IPC.HISTORY_OPERATION_EVIDENCE_DELETE, (_, request: unknown) => projectManager.deleteInterruptedHistoryEvidence(request))
-  ipcMain.handle(IPC.DOCUMENT_SAVE_STATUS, () => projectManager.documentSaveStatus())
-  ipcMain.handle(IPC.DOCUMENT_CONFLICT_REVIEW, () => projectManager.reviewExternalDocument())
-  ipcMain.handle(IPC.DOCUMENT_CONFLICT_RESOLVE, (_, request: unknown) => projectManager.resolveExternalDocument(request))
+  const trustedIpc = secureIpcMain(ipcMain, {
+    rendererFile: join(__dirname, '../renderer/index.html'),
+    devServerUrl: app.isPackaged ? undefined : process.env['ELECTRON_RENDERER_URL'],
+    roleFor: sender => {
+      if (mainWindow && !mainWindow.isDestroyed() && sender === mainWindow.webContents) return 'project'
+      if (settingsWindow && !settingsWindow.isDestroyed() && sender === settingsWindow.webContents) return 'settings'
+      return null
+    },
+  })
+  trustedIpc.handle(IPC.HISTORY_OPERATION_STATUS, () => projectManager.interruptedHistoryStatus())
+  trustedIpc.handle(IPC.HISTORY_OPERATION_REVIEW, () => projectManager.reviewInterruptedHistory())
+  trustedIpc.handle(IPC.HISTORY_OPERATION_ACKNOWLEDGE, (_, request: unknown) => projectManager.acknowledgeInterruptedHistory(request))
+  trustedIpc.handle(IPC.HISTORY_OPERATION_EVIDENCE_PREVIEW, () => projectManager.interruptedHistoryEvidencePreview())
+  trustedIpc.handle(IPC.HISTORY_OPERATION_EVIDENCE_DELETE, (_, request: unknown) => projectManager.deleteInterruptedHistoryEvidence(request))
+  trustedIpc.handle(IPC.DOCUMENT_SAVE_STATUS, () => projectManager.documentSaveStatus())
+  trustedIpc.handle(IPC.DOCUMENT_CONFLICT_REVIEW, () => projectManager.reviewExternalDocument())
+  trustedIpc.handle(IPC.DOCUMENT_CONFLICT_RESOLVE, (_, request: unknown) => projectManager.resolveExternalDocument(request))
 
-  ipcMain.handle(IPC.ARCHIVE_EXPORT, async () => {
+  trustedIpc.handle(IPC.ARCHIVE_EXPORT, async () => {
     try {
       const project = projectManager.getCurrent()
       if (!project) return err(ErrorCode.PROJECT_NOT_FOUND, 'No project is currently open')
@@ -291,7 +318,7 @@ function registerIpcHandlers(): void {
       return projectManager.exportProjectArchive(selected.filePath)
     } catch (error) { return err(ErrorCode.ARCHIVE_FAILED, String(error)) }
   })
-  ipcMain.handle(IPC.ARCHIVE_INSPECT, async () => {
+  trustedIpc.handle(IPC.ARCHIVE_INSPECT, async () => {
     try {
       const selected = await dialog.showOpenDialog({ title: 'Review project archive', properties: ['openFile'],
         filters: [{ name: 'Statekeep project archive', extensions: ['statekeeparchive'] }] })
@@ -299,7 +326,7 @@ function registerIpcHandlers(): void {
       return projectManager.inspectProjectArchive(selected.filePaths[0])
     } catch (error) { return err(ErrorCode.ARCHIVE_FAILED, String(error)) }
   })
-  ipcMain.handle(IPC.ARCHIVE_RESTORE, async (_, request: { token?: unknown } | null) => {
+  trustedIpc.handle(IPC.ARCHIVE_RESTORE, async (_, request: { token?: unknown } | null) => {
     try {
       if (typeof request?.token !== 'string') return err(ErrorCode.VALIDATION_FAILED, 'Review an archive first.')
       const selected = await dialog.showOpenDialog({ title: 'Choose parent folder for a new restored project', properties: ['openDirectory', 'createDirectory'] })
@@ -310,19 +337,27 @@ function registerIpcHandlers(): void {
 
   // ── Project lifecycle ────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC.PROJECT_CREATE, async (_, { name, parentPath }: { name: string; parentPath: string }) => {
+  trustedIpc.handle(IPC.PROJECT_CREATE, async (_, { name, parentPath }: { name: string; parentPath: string }) => {
     const result = await projectManager.createProject(name, parentPath)
     trackRecentProject(result)
     return result
   })
 
-  ipcMain.handle(IPC.PROJECT_OPEN, async (_, { path }: { path: string }) => {
-    const result = await projectManager.openProject(path)
+  trustedIpc.handle(IPC.PROJECT_OPEN, async (_, { path }: { path: string }) => {
+    const resolved = resolveProjectOpenTarget(path)
+    if (!resolved.ok) return resolved
+    const result = await projectManager.openProject(resolved.data)
     trackRecentProject(result)
     return result
   })
 
-  ipcMain.handle(IPC.PROJECT_OPEN_EXAMPLE, async () => {
+  trustedIpc.handle(IPC.PROJECT_CREATE_STARTER, async (_, request: unknown) => {
+    const result = await createStarterProject(projectManager, request)
+    trackRecentProject(result)
+    return result
+  })
+
+  trustedIpc.handle(IPC.PROJECT_OPEN_EXAMPLE, async () => {
     const configuredDirectory = process.env['STATEKEEP_EXAMPLE_PROJECTS_DIR']?.trim()
     // The example is a user-owned project, so keep it visible alongside their documents.
     const examplesDirectory = configuredDirectory || join(app.getPath('documents'), 'Statekeep Examples')
@@ -331,14 +366,14 @@ function registerIpcHandlers(): void {
     return result
   })
 
-  ipcMain.handle(IPC.PROJECT_SAVE, async () =>
+  trustedIpc.handle(IPC.PROJECT_SAVE, async () =>
     projectManager.saveProject()
   )
 
-  ipcMain.handle(IPC.PROJECT_UNDO, () => projectManager.undo())
-  ipcMain.handle(IPC.PROJECT_REDO, () => projectManager.redo())
-  ipcMain.handle(IPC.PROJECT_EDIT_HISTORY, () => ok(projectManager.editHistoryState()))
-  ipcMain.handle(IPC.TEXT_UNDO_REDO, (event, direction: unknown) => {
+  trustedIpc.handle(IPC.PROJECT_UNDO, () => projectManager.undo())
+  trustedIpc.handle(IPC.PROJECT_REDO, () => projectManager.redo())
+  trustedIpc.handle(IPC.PROJECT_EDIT_HISTORY, () => ok(projectManager.editHistoryState()))
+  trustedIpc.handle(IPC.TEXT_UNDO_REDO, (event, direction: unknown) => {
     if (direction !== 'undo' && direction !== 'redo') {
       return err(ErrorCode.VALIDATION_FAILED, 'Invalid text editing command')
     }
@@ -346,31 +381,31 @@ function registerIpcHandlers(): void {
     return ok(undefined)
   })
 
-  ipcMain.handle(IPC.PROJECT_GET_CURRENT, () => {
+  trustedIpc.handle(IPC.PROJECT_GET_CURRENT, () => {
     const project = projectManager.getCurrent()
     return ok(project)
   })
 
-  ipcMain.handle(IPC.PROJECT_CLOSE, async () =>
+  trustedIpc.handle(IPC.PROJECT_CLOSE, async () =>
     closeProjectAfterFinalSave(mainWindow ?? BrowserWindow.getFocusedWindow())
   )
 
   // ── Node CRUD ────────────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC.NODE_DUPLICATE, (_, { id, name }: { id: string; name: string }) =>
+  trustedIpc.handle(IPC.NODE_DUPLICATE, (_, { id, name }: { id: string; name: string }) =>
     projectManager.nodeDuplicate(id, name)
   )
 
-  ipcMain.handle(IPC.NODE_BATCH_UPDATE_PROPERTIES, (_, request: BatchPropertyUpdateRequest) =>
+  trustedIpc.handle(IPC.NODE_BATCH_UPDATE_PROPERTIES, (_, request: BatchPropertyUpdateRequest) =>
     projectManager.nodeBatchUpdateProperties(request)
   )
 
-  ipcMain.handle(IPC.NODE_CREATE, (
+  trustedIpc.handle(IPC.NODE_CREATE, (
     _,
     { parentId, name, templateId }: { parentId: string; name: string; templateId?: string | null }
   ) => projectManager.nodeCreate(parentId, name, templateId))
 
-  ipcMain.handle(IPC.NODE_UPDATE, (
+  trustedIpc.handle(IPC.NODE_UPDATE, (
     _,
     { id, changes }: {
       id: string
@@ -382,75 +417,75 @@ function registerIpcHandlers(): void {
     }
   ) => projectManager.nodeUpdate(id, changes))
 
-  ipcMain.handle(IPC.NODE_DELETE, (
+  trustedIpc.handle(IPC.NODE_DELETE, (
     _,
     { id, options }: { id: string; options?: { unlinkReferences?: boolean } }
   ) => projectManager.nodeDelete(id, options))
 
-  ipcMain.handle(IPC.NODE_MOVE, (
+  trustedIpc.handle(IPC.NODE_MOVE, (
     _,
     { id, newParentId, newOrder }: { id: string; newParentId: string; newOrder: number }
   ) => projectManager.nodeMove(id, newParentId, newOrder))
 
-  ipcMain.handle(IPC.NODE_HISTORY, (_, { nodeId }: { nodeId: string }) =>
+  trustedIpc.handle(IPC.NODE_HISTORY, (_, { nodeId }: { nodeId: string }) =>
     projectManager.nodeHistory(nodeId)
   )
 
-  ipcMain.handle(IPC.NODE_HISTORY_BACKFILL_STATUS, () =>
+  trustedIpc.handle(IPC.NODE_HISTORY_BACKFILL_STATUS, () =>
     ok(projectManager.getHistoryIndexStatus())
   )
 
-  ipcMain.handle(IPC.NODE_HISTORY_REINDEX, () =>
+  trustedIpc.handle(IPC.NODE_HISTORY_REINDEX, () =>
     projectManager.reindexHistory()
   )
 
   // ── Templates ──────────────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC.TEMPLATE_CREATE, (
+  trustedIpc.handle(IPC.TEMPLATE_CREATE, (
     _,
     { id, template }: { id: string; template: NodeTemplate }
   ) => projectManager.templateCreate(id, template))
 
-  ipcMain.handle(IPC.TEMPLATE_UPDATE, (
+  trustedIpc.handle(IPC.TEMPLATE_UPDATE, (
     _,
     { id, changes }: { id: string; changes: Partial<NodeTemplate> }
   ) => projectManager.templateUpdate(id, changes))
 
-  ipcMain.handle(IPC.TEMPLATE_DELETE, (_, { id }: { id: string }) =>
+  trustedIpc.handle(IPC.TEMPLATE_DELETE, (_, { id }: { id: string }) =>
     projectManager.templateDelete(id)
   )
 
   // ── CSV import ─────────────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC.IMPORT_INSPECT, (_, { path }: { path: string }) =>
+  trustedIpc.handle(IPC.IMPORT_INSPECT, (_, { path }: { path: string }) =>
     projectManager.inspectImport(path)
   )
 
-  ipcMain.handle(IPC.IMPORT_PLAN, (_, { path, mapping }: { path: string; mapping: ImportMapping }) =>
+  trustedIpc.handle(IPC.IMPORT_PLAN, (_, { path, mapping }: { path: string; mapping: ImportMapping }) =>
     projectManager.planImportCsv(path, mapping)
   )
 
-  ipcMain.handle(IPC.IMPORT_APPLY, (_, { path, mapping }: { path: string; mapping: ImportMapping }) =>
+  trustedIpc.handle(IPC.IMPORT_APPLY, (_, { path, mapping }: { path: string; mapping: ImportMapping }) =>
     projectManager.applyImportCsv(path, mapping)
   )
 
   // ── NetBox import ──────────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC.IMPORT_NETBOX_INSPECT, (_, { path }: { path: string }) =>
+  trustedIpc.handle(IPC.IMPORT_NETBOX_INSPECT, (_, { path }: { path: string }) =>
     projectManager.inspectNetboxImport(path)
   )
 
-  ipcMain.handle(
+  trustedIpc.handle(
     IPC.IMPORT_NETBOX_PLAN,
     (_, { path, options }: { path: string; options: NetboxImportOptions }) =>
       projectManager.planNetboxImport(path, options)
   )
 
-  ipcMain.handle(IPC.INVENTORY_TABLE_QUERY, (_, request: unknown) =>
+  trustedIpc.handle(IPC.INVENTORY_TABLE_QUERY, (_, request: unknown) =>
     projectManager.inventoryTable(request)
   )
 
-  ipcMain.handle(IPC.INVENTORY_EXPORT_CSV, async (_, request: unknown) => {
+  trustedIpc.handle(IPC.INVENTORY_EXPORT_CSV, async (_, request: unknown) => {
     const prepared = projectManager.prepareInventoryCsv(request)
     if (!prepared.ok) return prepared
     try {
@@ -470,7 +505,7 @@ function registerIpcHandlers(): void {
     }
   })
 
-  ipcMain.handle(
+  trustedIpc.handle(
     IPC.IMPORT_NETBOX_APPLY,
     (_, { path, options }: { path: string; options: NetboxImportOptions }) =>
       projectManager.applyNetboxImport(path, options)
@@ -478,7 +513,7 @@ function registerIpcHandlers(): void {
 
   // ── Search ───────────────────────────────────────────────────────────────
 
-  ipcMain.handle(
+  trustedIpc.handle(
     IPC.SEARCH_QUERY,
     (_, { query, offset, limit, filters }: {
       query: string
@@ -490,7 +525,7 @@ function registerIpcHandlers(): void {
 
   // ── Git ──────────────────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC.GIT_CHECK, async () => {
+  trustedIpc.handle(IPC.GIT_CHECK, async () => {
     const status = await gitService.checkVersion()
     return ok(status)
   })
@@ -499,7 +534,7 @@ function registerIpcHandlers(): void {
   // Main builds the content authoritatively (ProjectManager.buildReport) and owns
   // the save dialog + file write — the renderer never touches the filesystem.
 
-  ipcMain.handle(IPC.REPORT_EXPORT, async (_, { from, to, format, scopeNodeId }: { from: string; to: string; format: unknown; scopeNodeId?: unknown }) => {
+  trustedIpc.handle(IPC.REPORT_EXPORT, async (_, { from, to, format, scopeNodeId }: { from: string; to: string; format: unknown; scopeNodeId?: unknown }) => {
     if (!isReportFormat(format)) {
       return err(ErrorCode.VALIDATION_FAILED, 'Report format must be markdown, csv, or html')
     }
@@ -526,13 +561,13 @@ function registerIpcHandlers(): void {
     }
   })
 
-  ipcMain.handle(IPC.REPORT_BUILD, (_, { from, to, format, scopeNodeId }: { from: string; to: string; format: unknown; scopeNodeId?: unknown }) =>
+  trustedIpc.handle(IPC.REPORT_BUILD, (_, { from, to, format, scopeNodeId }: { from: string; to: string; format: unknown; scopeNodeId?: unknown }) =>
     projectManager.buildReport(from, to, format, scopeNodeId)
   )
 
   // ── Dialog helpers ───────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC.DIALOG_OPEN_FOLDER, async (_, { title, purpose }: { title: string; purpose?: FolderDialogPurpose }) => {
+  trustedIpc.handle(IPC.DIALOG_OPEN_FOLDER, async (_, { title, purpose }: { title: string; purpose?: FolderDialogPurpose }) => {
     const directoryKind = directoryKindForFolderDialogPurpose(purpose)
     const result = await dialog.showOpenDialog({
       title,
@@ -545,7 +580,7 @@ function registerIpcHandlers(): void {
     return result.canceled ? null : result.filePaths[0]
   })
 
-  ipcMain.handle(IPC.DIALOG_OPEN_FILE, async (_, { title }: { title: string }) => {
+  trustedIpc.handle(IPC.DIALOG_OPEN_FILE, async (_, { title }: { title: string }) => {
     const result = await dialog.showOpenDialog({
       title,
       properties: ['openFile'],
@@ -561,44 +596,44 @@ function registerIpcHandlers(): void {
   // ── Native menu state ────────────────────────────────────────────────────
   // Renderer-owned UI state drives native menu enablement. The renderer still
   // self-guards every command when a menu item or accelerator dispatches.
-  ipcMain.on(IPC.MENU_STATE_UPDATE, (_, state: unknown) => {
+  trustedIpc.on(IPC.MENU_STATE_UPDATE, (_, state: unknown) => {
     updateApplicationMenuState(state)
   })
 
-  ipcMain.handle(IPC.WINDOW_FOCUS_GET, (event) =>
+  trustedIpc.handle(IPC.WINDOW_FOCUS_GET, (event) =>
     ok(BrowserWindow.fromWebContents(event.sender)?.isFocused() ?? true)
   )
 
-  ipcMain.handle(IPC.RECENT_PROJECTS_LIST, () =>
+  trustedIpc.handle(IPC.RECENT_PROJECTS_LIST, () =>
     ok(recentProjects.all())
   )
 
-  ipcMain.handle(IPC.SETTINGS_GET, () =>
+  trustedIpc.handle(IPC.SETTINGS_GET, () =>
     ok(appSettings.getWorkspaceSettings())
   )
 
-  ipcMain.handle(IPC.SETTINGS_UPDATE_WORKSPACE, (_, patch: unknown) =>
+  trustedIpc.handle(IPC.SETTINGS_UPDATE_WORKSPACE, (_, patch: unknown) =>
     ok(appSettings.updateWorkspaceSettings(normalizeWorkspaceSettingsPatch(patch)))
   )
 
-  ipcMain.handle(IPC.SETTINGS_GET_PREFERENCES, () =>
+  trustedIpc.handle(IPC.SETTINGS_GET_PREFERENCES, () =>
     ok(appSettings.getPreferences())
   )
 
-  ipcMain.handle(IPC.SETTINGS_UPDATE_PREFERENCES, (_, patch: unknown) => {
+  trustedIpc.handle(IPC.SETTINGS_UPDATE_PREFERENCES, (_, patch: unknown) => {
     const preferences = appSettings.updatePreferences(normalizePreferencesPatch(patch))
     synchronizeNativeAppearance()
     broadcastPreferencesChanged()
     return ok(preferences)
   })
 
-  ipcMain.handle(IPC.SETTINGS_RESET_LAYOUT, () => {
+  trustedIpc.handle(IPC.SETTINGS_RESET_LAYOUT, () => {
     const settings = appSettings.resetLayout()
     resetMainWindowLayout(settings)
     return ok(settings)
   })
 
-  ipcMain.handle(IPC.SETTINGS_CLOSE_WINDOW, (event) => {
+  trustedIpc.handle(IPC.SETTINGS_CLOSE_WINDOW, (event) => {
     const win = BrowserWindow.fromWebContents(event.sender)
     if (win && win === settingsWindow && !win.isDestroyed()) win.close()
     return ok(undefined)
@@ -606,37 +641,37 @@ function registerIpcHandlers(): void {
 
   // ── Snapshots ────────────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC.SNAPSHOT_CREATE, (_, { name, description }: { name: unknown; description?: unknown }) =>
+  trustedIpc.handle(IPC.SNAPSHOT_CREATE, (_, { name, description }: { name: unknown; description?: unknown }) =>
     projectManager.snapshotCreate(name, description)
   )
 
-  ipcMain.handle(IPC.SNAPSHOT_LIST, () =>
+  trustedIpc.handle(IPC.SNAPSHOT_LIST, () =>
     projectManager.snapshotList()
   )
 
-  ipcMain.handle(IPC.SNAPSHOT_COMPARE, (_, { a, b, scopeNodeId }: { a: string; b: string; scopeNodeId?: unknown }) =>
+  trustedIpc.handle(IPC.SNAPSHOT_COMPARE, (_, { a, b, scopeNodeId }: { a: string; b: string; scopeNodeId?: unknown }) =>
     projectManager.snapshotCompare(a, b, scopeNodeId)
   )
 
-  ipcMain.handle(IPC.SNAPSHOT_LOAD_COMPARE, (_, { a, b, scopeNodeId }: { a: string; b: string; scopeNodeId?: unknown }) =>
+  trustedIpc.handle(IPC.SNAPSHOT_LOAD_COMPARE, (_, { a, b, scopeNodeId }: { a: string; b: string; scopeNodeId?: unknown }) =>
     projectManager.snapshotLoadCompare(a, b, scopeNodeId)
   )
 
-  ipcMain.handle(IPC.SNAPSHOT_REVERT, (_, request: { name: string; note?: string | null }) =>
+  trustedIpc.handle(IPC.SNAPSHOT_REVERT, (_, request: { name: string; note?: string | null }) =>
     projectManager.snapshotRevert(request)
   )
 
-  ipcMain.handle(IPC.SNAPSHOT_TIMELINE, () =>
+  trustedIpc.handle(IPC.SNAPSHOT_TIMELINE, () =>
     projectManager.snapshotTimeline()
   )
 
-  ipcMain.handle(IPC.HISTORY_BACKUP_STATUS, () => projectManager.historyBackupStatus())
-  ipcMain.handle(IPC.RECOVERY_FILES_PREVIEW, () => projectManager.recoveryFilesPreview())
-  ipcMain.handle(IPC.RECOVERY_FILES_ADOPT, (_, request: unknown) => projectManager.adoptRecoveryFile(request))
-  ipcMain.handle(IPC.RECOVERY_FILES_FORGET, (_, request: unknown) => projectManager.forgetRecoveryFile(request))
-  ipcMain.handle(IPC.HISTORY_BACKUP_RESTORE, (_, request: unknown) => projectManager.restoreHistoryBackup(request))
+  trustedIpc.handle(IPC.HISTORY_BACKUP_STATUS, () => projectManager.historyBackupStatus())
+  trustedIpc.handle(IPC.RECOVERY_FILES_PREVIEW, () => projectManager.recoveryFilesPreview())
+  trustedIpc.handle(IPC.RECOVERY_FILES_ADOPT, (_, request: unknown) => projectManager.adoptRecoveryFile(request))
+  trustedIpc.handle(IPC.RECOVERY_FILES_FORGET, (_, request: unknown) => projectManager.forgetRecoveryFile(request))
+  trustedIpc.handle(IPC.HISTORY_BACKUP_RESTORE, (_, request: unknown) => projectManager.restoreHistoryBackup(request))
 
-  ipcMain.handle(IPC.RECOVERY_APPLY, (_, request: { id: string }) =>
+  trustedIpc.handle(IPC.RECOVERY_APPLY, (_, request: { id: string }) =>
     projectManager.recoveryPointApply(request)
   )
 }
@@ -695,6 +730,7 @@ app.whenReady().then(async () => {
     openReleasesPage: openReleasesPage,
     reportIssue: reportIssue,
     copyDiagnostics: copyDiagnostics,
+    exportDiagnostics: () => { void exportDiagnostics() },
     showProjectWindow: focusMainWindow,
   })
   const iconPath = getBrandIconPath()
@@ -1037,6 +1073,30 @@ function copyDiagnostics(): void {
   })
 }
 
+async function exportDiagnostics(): Promise<void> {
+  try {
+    const selected = await dialog.showSaveDialog({
+      title: 'Export Diagnostics Bundle',
+      defaultPath: `Statekeep-diagnostics-${new Date().toISOString().slice(0, 10)}.json`,
+      filters: [{ name: 'Diagnostics bundle', extensions: ['json'] }],
+    })
+    if (selected.canceled || !selected.filePath) return
+    const bundle = await buildDiagnosticsBundle(await collectDiagnostics(), logDir)
+    await writeFile(selected.filePath, bundle, { encoding: 'utf8', mode: 0o600 })
+    await showMessageBoxSafely('diagnostics export complete', mainWindow, {
+      type: 'info', title: 'Diagnostics Exported', message: 'Diagnostics were saved locally.',
+      detail: 'The bundle includes runtime details and recent log event labels. Local paths, project content, and log context fields are omitted. Review the file before sharing; nothing was uploaded.',
+      buttons: ['OK'],
+    })
+  } catch (error) {
+    appLogger.error('diagnostics export failed', { error: errorMessage(error) })
+    await showMessageBoxSafely('diagnostics export error', mainWindow, {
+      type: 'error', title: 'Could Not Export Diagnostics', message: 'The diagnostics bundle could not be saved.',
+      detail: 'Choose a writable location and try again. Help → Copy Diagnostics is also available.', buttons: ['OK'],
+    })
+  }
+}
+
 async function collectDiagnostics(): Promise<string> {
   return buildDiagnostics({
     appName: app.name || 'Statekeep',
@@ -1100,7 +1160,7 @@ function notifyWindowFocusChanged(win: BrowserWindow, isFocused: boolean): void 
 
 function isTrustedRendererUrl(url: string): boolean {
   return isTrustedRendererNavigationUrl(url, {
-    devServerUrl: process.env['ELECTRON_RENDERER_URL'],
+    devServerUrl: app.isPackaged ? undefined : process.env['ELECTRON_RENDERER_URL'],
     rendererDirectory: join(__dirname, '../renderer'),
   })
 }

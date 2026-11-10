@@ -27,6 +27,7 @@ let installOptions: {
   openReleasesPage(): void
   reportIssue(): void
   copyDiagnostics(): void
+  exportDiagnostics(): void
   showProjectWindow(): void
 } | null = null
 let recentProjects: RecentProjectMenuEntry[] = []
@@ -49,6 +50,7 @@ export function installApplicationMenu(options: {
   openReleasesPage(): void
   reportIssue(): void
   copyDiagnostics(): void
+  exportDiagnostics(): void
   showProjectWindow(): void
 }): void {
   installOptions = {
@@ -65,6 +67,7 @@ export function installApplicationMenu(options: {
     openReleasesPage: options.openReleasesPage,
     reportIssue: options.reportIssue,
     copyDiagnostics: options.copyDiagnostics,
+    exportDiagnostics: options.exportDiagnostics,
     showProjectWindow: options.showProjectWindow,
   }
   recentProjects = options.recentProjects
@@ -85,7 +88,11 @@ function rebuildApplicationMenu(): void {
     appName: options.appName,
     recentProjects,
     dispatch: dispatchMenuCommand,
-    openRecentProject: options.openRecentProject,
+    // Recent entries are direct main-process callbacks, so they must honor
+    // the same dialog/busy policy as the renderer's Open command.
+    openRecentProject: path => {
+      if (commandState['project:open']) options.openRecentProject(path)
+    },
     clearRecentProjects: options.clearRecentProjects,
     openPreferences: options.openPreferences,
     openHelp: options.openHelp,
@@ -98,6 +105,7 @@ function rebuildApplicationMenu(): void {
       })
     },
     copyDiagnostics: options.copyDiagnostics,
+    exportDiagnostics: options.exportDiagnostics,
   }))
 
   Menu.setApplicationMenu(menu)
@@ -111,6 +119,8 @@ function rebuildApplicationMenu(): void {
 
 export function updateApplicationMenuState(nextState: unknown): void {
   commandState = normalizeMenuCommandState(nextState)
+  const recent = Menu.getApplicationMenu()?.getMenuItemById('open-recent-projects')
+  if (recent) recent.enabled = commandState['project:open']
   for (const id of MENU_COMMAND_IDS) {
     const item = commandItems.get(id)
     if (item) item.enabled = commandState[id] ||

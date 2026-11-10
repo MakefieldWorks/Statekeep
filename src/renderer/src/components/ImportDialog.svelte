@@ -1,6 +1,8 @@
 <svelte:options runes />
 
 <script lang="ts">
+  import { onMount } from 'svelte'
+  import { modalFocus } from '../lib/modal-focus'
   // CSV import modal: choose a file (main inspects it), map columns → name /
   // path / typed properties, validate the WHOLE file, then import. Main is
   // authoritative — this dialog only drives it and shows results.
@@ -13,13 +15,14 @@
   import ImportIssueList from './ImportIssueList.svelte'
 
   interface Props {
+    initialPath?: string | null
     baseParent: ProjectNode
     templates: Record<string, NodeTemplate>
     onClose: () => void
     onImported: (project: Project, summary: ImportResult) => void
   }
 
-  let { baseParent, templates, onClose, onImported }: Props = $props()
+  let { baseParent, templates, onClose, onImported, initialPath = null }: Props = $props()
 
   let filePath = $state<string | null>(null)
   let inspect = $state<ImportInspect | null>(null)
@@ -93,6 +96,12 @@
     error = null
     const path = await window.api.dialog.openFile('Choose a file to import (CSV or NetBox JSON)')
     if (!path) return // canceled
+    await inspectFile(path)
+  }
+
+  onMount(() => { if (initialPath) void inspectFile(initialPath) })
+
+  async function inspectFile(path: string) {
     busy = true
     try {
       if (/\.json$/i.test(path)) {
@@ -245,7 +254,7 @@
   }
 
   function handleKeyDown(e: KeyboardEvent) {
-    if (e.key === 'Escape') onClose()
+    if (e.key === 'Escape' && !busy) onClose()
   }
 </script>
 
@@ -260,6 +269,7 @@
     class="bg-white rounded-xl shadow-xl w-full max-w-3xl mx-4 flex flex-col overflow-hidden"
     style="height: min(85vh, 720px)"
     role="dialog"
+    use:modalFocus
     aria-modal="true"
     aria-label={mode === 'netbox' && netboxInspect ? 'Import from NetBox' : 'Import'}
     data-testid="import-dialog"

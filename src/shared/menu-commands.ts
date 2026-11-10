@@ -26,7 +26,7 @@ export const MENU_COMMANDS = {
   },
   'project:close': {
     label: 'Close Project',
-    accelerator: 'CommandOrControl+W',
+    accelerator: 'CommandOrControl+Shift+W',
   },
   'project:import': {
     label: 'Import...',
@@ -43,6 +43,14 @@ export const MENU_COMMANDS = {
   'project:search': {
     label: 'Find in Tree',
     accelerator: 'CommandOrControl+F',
+  },
+  'snapshot:create': {
+    label: 'Create Snapshot...',
+    accelerator: 'CommandOrControl+Alt+S',
+  },
+  'compare:start': {
+    label: 'Compare Snapshots...',
+    accelerator: 'CommandOrControl+Alt+C',
   },
   'compare:exit': {
     label: 'Exit Compare',
@@ -62,7 +70,14 @@ export const MENU_COMMANDS = {
   },
   'node:addChild': {
     label: 'Add Child',
+    accelerator: 'CommandOrControl+Enter',
   },
+  'node:addSibling': {
+    label: 'Add Sibling',
+    accelerator: 'CommandOrControl+Shift+Enter',
+  },
+  'node:moveUp': { label: 'Move Selected Up', accelerator: 'CommandOrControl+Alt+Up' },
+  'node:moveDown': { label: 'Move Selected Down', accelerator: 'CommandOrControl+Alt+Down' },
   'node:rename': {
     label: 'Rename Selected',
     accelerator: 'F2',
@@ -73,9 +88,11 @@ export const MENU_COMMANDS = {
   },
   'node:moveTo': {
     label: 'Move Selected To...',
+    accelerator: 'CommandOrControl+Shift+M',
   },
   'node:delete': {
     label: 'Delete Selected...',
+    accelerator: 'CommandOrControl+Backspace',
   },
   'history:reindex': {
     label: 'Reindex History',

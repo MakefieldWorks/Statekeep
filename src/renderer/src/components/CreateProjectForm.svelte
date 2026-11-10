@@ -1,10 +1,12 @@
 <svelte:options runes />
 
 <script lang="ts">
+  import { PROJECT_STARTERS } from "../../../shared/project-starters"
   interface Props {
     brandMark: string
     error: string | null
     /** Bound: the parent owns the draft name and clears it on close. */
+    starterId: string
     name: string
     path: string
     creating: boolean
@@ -13,11 +15,11 @@
     onCreate: () => void
   }
 
-  let { brandMark, error, name = $bindable(), path, creating, onChooseFolder, onCancel, onCreate }: Props = $props()
+  let { brandMark, error, name = $bindable(), starterId = $bindable(''), path, creating, onChooseFolder, onCancel, onCreate }: Props = $props()
 </script>
 
-<div class="flex flex-col h-full items-center justify-center bg-stone-50">
-  <div class="flex flex-col gap-5 w-full max-w-sm px-6">
+<div class="flex flex-col h-full overflow-y-auto items-center py-8 bg-stone-50">
+  <div class="flex flex-col gap-5 w-full max-w-lg px-6">
 
     <div class="flex items-center gap-3">
       <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white ring-1 ring-stone-200">
@@ -35,6 +37,24 @@
       </div>
     {/if}
 
+    <div class="flex flex-col gap-2">
+      <label for="project-starter" class="text-xs font-medium text-stone-600 uppercase tracking-wide">Start with</label>
+      <select id="project-starter" bind:value={starterId} disabled={creating} class="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800" data-testid="project-starter-select">
+        <option value="">Blank project</option>
+        {#each PROJECT_STARTERS as starter (starter.id)}
+          <option value={starter.id}>{starter.name}</option>
+        {/each}
+      </select>
+      {#each PROJECT_STARTERS.filter(starter => starter.id === starterId) as starter (starter.id)}
+        <div class="rounded-lg border border-stone-200 bg-white p-3 text-sm text-stone-600" data-testid="starter-preview">
+          <p>{starter.description}</p>
+          <p class="mt-2 font-medium">{starter.structure}</p>
+          <p class="mt-2">Try it: {starter.exercise}</p>
+          <p class="mt-2 text-xs">Fictional sample data. Your copy is fully editable and works offline.</p>
+        </div>
+      {/each}
+    </div>
+
     <div class="flex flex-col gap-1.5">
       <label class="text-xs font-medium text-stone-600 uppercase tracking-wide" for="proj-name">
         Project Name
@@ -47,7 +67,7 @@
         class="w-full bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm
                text-stone-800 placeholder-stone-300 focus:outline-none focus:ring-2
                focus:ring-stone-400 focus:border-transparent selectable"
-        onkeydown={(e) => e.key === 'Enter' && onCreate()}
+        onkeydown={(e) => e.key === 'Enter' && !creating && onCreate()}
         data-testid="project-name-input"
       />
     </div>
@@ -61,6 +81,7 @@
         </div>
         <button
           onclick={onChooseFolder}
+          disabled={creating}
           class="shrink-0 bg-white hover:bg-stone-50 text-stone-600 text-sm
                  px-3 py-2 rounded-lg border border-stone-200 transition-colors cursor-default"
           data-testid="choose-folder-btn"
@@ -73,6 +94,7 @@
     <div class="flex gap-2 pt-1">
       <button
         onclick={onCancel}
+        disabled={creating}
         class="flex-1 bg-white hover:bg-stone-50 text-stone-600 text-sm font-medium
                px-4 py-2.5 rounded-lg border border-stone-200 transition-colors cursor-default"
       >

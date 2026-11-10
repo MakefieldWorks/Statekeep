@@ -5,8 +5,9 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'fs'
 import { join, relative, sep } from 'path'
 import { fileURLToPath } from 'url'
 
-import { listPackage } from '@electron/asar'
+import { listPackage, extractFile } from '@electron/asar'
 import plist from 'plist'
+import { verifyFuses } from './harden-electron.cjs'
 
 const ROOT_DIR = fileURLToPath(new URL('..', import.meta.url))
 const DIST_DIR = join(ROOT_DIR, 'dist')
@@ -93,6 +94,7 @@ function verifyMacBundle() {
   ensureFile(join(appBundle, 'Contents', 'Resources', iconFileName))
 
   verifyAsarAssets(join(appBundle, 'Contents', 'Resources', 'app.asar'))
+  return appBundle
 }
 
 function verifyAsarAssets(asarPath) {
@@ -110,6 +112,12 @@ function verifyAsarAssets(asarPath) {
     'Packaged app.asar is missing the branded favicon asset'
   )
   verifyAsarOfflineHelp(asarEntries)
+  // Starters are compiled into the main bundle, not fetched or copied from a
+  // development-only resource directory. Check each starter's distinctive data.
+  const mainBundle = extractFile(asarPath, 'out/main/index.js').toString('utf8')
+  for (const sample of ['DEMO-SA-042', 'DEMO-SW-001', 'DEMO-AC-009']) {
+    assert(mainBundle.includes(sample), `Packaged app.asar is missing starter sample ${sample}`)
+  }
 }
 
 // Help → Statekeep Help reads the bundle from app.asar, so every file of the
@@ -137,6 +145,7 @@ function verifyWindowsBundle() {
   assert(existsSync(unpackedDir), `Could not find Windows unpacked output at ${unpackedDir}`)
   ensureFile(join(unpackedDir, 'Statekeep.exe'))
   verifyAsarAssets(join(unpackedDir, 'resources', 'app.asar'))
+  return join(unpackedDir, 'Statekeep.exe')
 }
 
 // buildHostPackage passes --dir, so Linux produces linux-unpacked rather than
@@ -146,17 +155,18 @@ function verifyLinuxBundle() {
   assert(existsSync(unpackedDir), `Could not find Linux unpacked output at ${unpackedDir}`)
   ensureFile(join(unpackedDir, 'statekeep'))
   verifyAsarAssets(join(unpackedDir, 'resources', 'app.asar'))
+  return join(unpackedDir, 'statekeep')
 }
 
-function main() {
+async function main() {
   REQUIRED_ASSETS.forEach(ensureFile)
   buildHostPackage()
 
-  if (process.platform === 'darwin') verifyMacBundle()
-  else if (process.platform === 'win32') verifyWindowsBundle()
-  else verifyLinuxBundle()
+  const executable = process.platform === 'darwin' ? verifyMacBundle()
+    : process.platform === 'win32' ? verifyWindowsBundle() : verifyLinuxBundle()
+  await verifyFuses(executable, process.platform)
 
-  console.log(`Verified packaged branding assets and offline Help for ${process.platform}`)
+  console.log(`Verified packaged branding, offline Help, starters, and Electron fuses for ${process.platform}`)
 }
 
-main()
+await main()

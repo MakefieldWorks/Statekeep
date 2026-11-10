@@ -51,11 +51,15 @@ describe('buildMenuCommandState', () => {
 
   it('enables project and node commands for a selected child', () => {
     expect(enabled(buildMenuCommandState(ctx()))).toEqual([
+      'compare:start',
       'history:reindex',
       'node:addChild',
+      'node:addSibling',
       'node:delete',
       'node:duplicate',
+      'node:moveDown',
       'node:moveTo',
+      'node:moveUp',
       'node:rename',
       'project:close',
       'project:import',
@@ -65,7 +69,16 @@ describe('buildMenuCommandState', () => {
       'project:snapshots',
       'project:templates',
       'project:undo',
+      'snapshot:create',
     ])
+  })
+
+  it('protects text editing and dialogs from structural accelerators', () => {
+    for (const overrides of [{ textEditing: true }, { archiveOpen: true }, { importDialogOpen: true }, { templateManagerOpen: true }, { moveToNodeId: 'child' }]) {
+      const state = buildMenuCommandState(ctx(overrides))
+      for (const id of ['node:addChild', 'node:addSibling', 'node:moveUp', 'node:moveDown', 'node:moveTo', 'node:delete'] as const) expect(state[id]).toBe(false)
+    }
+    expect(buildMenuCommandState(ctx({ compareMode: true, editingLocked: true }))['snapshot:create']).toBe(false)
   })
 
   it('does not allow duplicating, moving, or deleting the root', () => {
@@ -94,7 +107,19 @@ describe('buildMenuCommandState', () => {
       expect(state['node:duplicate']).toBe(false)
       expect(state['node:moveTo']).toBe(false)
       expect(state['node:delete']).toBe(false)
-      expect(state['node:rename']).toBe(true)
+      expect(state['node:rename']).toBe(overrides.snapshotComparing === true)
+    }
+  })
+
+  it('blocks project switching and all non-text menu actions throughout every modal', () => {
+    const dialogs: Partial<CommandContext>[] = [
+      { archiveOpen: true }, { importDialogOpen: true }, { templateManagerOpen: true },
+      { batchDialogOpen: true }, { duplicateNodeId: 'child' }, { moveToNodeId: 'child' },
+      { revertDialogSnapshotName: 'baseline' }, { recoveryDialogPoint: { id: 'recovery' } },
+    ]
+    for (const dialog of dialogs) {
+      expect(enabled(buildMenuCommandState(ctx(dialog)))).toEqual([])
+      expect(enabled(buildMenuCommandState(ctx({ ...dialog, textEditing: true })))).toEqual(['project:redo', 'project:undo'])
     }
   })
 
