@@ -12,12 +12,40 @@ test('recovers an actual renderer crash without discarding main-process edits', 
     return created.data.path!
   }, workspaceDir)
 
-  await electronApp.evaluate(({ dialog, BrowserWindow }) => {
+  const crash = await electronApp.evaluate(async ({ dialog, BrowserWindow }) => {
     dialog.showMessageBox = async () => ({ response: 0, checkboxChecked: false })
     const main = BrowserWindow.getAllWindows().find(win => !win.getParentWindow())
     if (!main) throw new Error('Project window not found')
-    main.webContents.forcefullyCrashRenderer()
+    const contents = main.webContents
+    // On Linux forcefullyCrashRenderer returns before the renderer is gone.
+    // Sending executeJavaScript in that interval can leave its promise attached
+    // to the dead renderer forever, preventing expect.poll from retrying.
+    return await new Promise<{ reason: string; exitCode: number }>((resolve, reject) => {
+      let observedCrash: { reason: string; exitCode: number } | null = null
+      const cleanup = () => {
+        clearTimeout(timer)
+        contents.removeListener('render-process-gone', onGone)
+        contents.removeListener('did-finish-load', onReloaded)
+      }
+      const onReloaded = () => {
+        cleanup()
+        resolve(observedCrash!)
+      }
+      const onGone = (_event: unknown, details: { reason: string; exitCode: number }) => {
+        observedCrash = { reason: details.reason, exitCode: details.exitCode }
+        contents.once('did-finish-load', onReloaded)
+      }
+      const timer = setTimeout(() => {
+        cleanup()
+        reject(new Error(observedCrash
+          ? `Renderer crashed (${observedCrash.reason}) but recovery did not finish loading.`
+          : 'Renderer did not report the requested crash.'))
+      }, 10_000)
+      contents.once('render-process-gone', onGone)
+      try { contents.forcefullyCrashRenderer() } catch (error) { cleanup(); reject(error) }
+    })
   })
+  expect(crash.reason).not.toBe('clean-exit')
 
   await expect.poll(async () => {
     // Playwright permanently marks the old Page as crashed even after Electron
