@@ -343,9 +343,13 @@ function registerIpcHandlers(): void {
     return result
   })
 
-  trustedIpc.handle(IPC.PROJECT_OPEN, async (_, { path }: { path: string }) =>
-    openProjectFromOsTarget(path, { notifyRenderer: false })
-  )
+  trustedIpc.handle(IPC.PROJECT_OPEN, async (_, { path }: { path: string }) => {
+    const resolved = resolveProjectOpenTarget(path)
+    if (!resolved.ok) return resolved
+    const result = await projectManager.openProject(resolved.data)
+    trackRecentProject(result)
+    return result
+  })
 
   trustedIpc.handle(IPC.PROJECT_CREATE_STARTER, async (_, request: unknown) => {
     const result = await createStarterProject(projectManager, request)

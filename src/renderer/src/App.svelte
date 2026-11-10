@@ -795,6 +795,10 @@
     }
     if (!/\.statekeep$/i.test(path)) { showToast('Unsupported file. Drop a .statekeep project, CSV, or NetBox JSON file.'); return }
     const fallbackState = project ? 'open' : 'welcome'
+    if (project) {
+      const saved = await window.api.project.save()
+      if (!saved.ok) { showToast(saved.error.message); return }
+    }
     appState = 'loading'
     const result = await window.api.project.open(path)
     if (result.ok) { resetOpenProjectUi(); applyOpenedProject(result.data) }
