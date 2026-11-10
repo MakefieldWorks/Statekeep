@@ -35,6 +35,22 @@ describe('theme definitions', () => {
     }
   })
 
+  it('keeps readable text tokens above 4.5:1 on primary surfaces', () => {
+    const luminance = (hex: string) => {
+      const [r, g, b] = hex.slice(1).match(/../g)!.map(part => parseInt(part, 16) / 255)
+        .map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4)
+      return r * 0.2126 + g * 0.7152 + b * 0.0722
+    }
+    for (const theme of BUILT_IN_THEMES) {
+      for (const foreground of ['text-faint', 'text-muted', 'text-body', 'text-primary'] as const) {
+        for (const background of ['surface-raised', 'surface-canvas', 'surface-recessed'] as const) {
+          const a = luminance(theme.tokens[foreground]), b = luminance(theme.tokens[background])
+          expect((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05), `${theme.id} ${foreground} / ${background}`).toBeGreaterThanOrEqual(4.5)
+        }
+      }
+    }
+  })
+
   it('resolves independently selected light and dark theme IDs', () => {
     expect(resolveTheme(DEFAULT_APPEARANCE_PREFERENCE, 'light').id).toBe('statekeep-light')
     expect(resolveTheme(DEFAULT_APPEARANCE_PREFERENCE, 'dark').id).toBe('statekeep-dark')

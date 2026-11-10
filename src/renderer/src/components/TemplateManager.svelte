@@ -1,6 +1,7 @@
 <svelte:options runes />
 
 <script lang="ts">
+  import { modalFocus } from '../lib/modal-focus'
   // Modal for managing node templates: list on the left, editor on the right.
   // Handlers return Promise<string | null> — null on success, an error message
   // on failure (e.g. templateUpdate rejected because it would invalidate a
@@ -212,7 +213,7 @@
   }
 
   function handleKeyDown(e: KeyboardEvent) {
-    if (e.key === 'Escape') onClose()
+    if (e.key === 'Escape' && !busy) onClose()
   }
 
   let labelInput: HTMLInputElement | null = $state(null)
@@ -235,6 +236,7 @@
     class="bg-white rounded-xl shadow-xl w-full max-w-3xl mx-4 flex flex-col overflow-hidden"
     style="height: min(80vh, 640px)"
     role="dialog"
+    use:modalFocus
     aria-modal="true"
     aria-label="Manage templates"
     data-testid="template-manager"

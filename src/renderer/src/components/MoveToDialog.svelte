@@ -1,6 +1,7 @@
 <svelte:options runes />
 
 <script lang="ts">
+  import { modalFocus } from '../lib/modal-focus'
   import { onMount, tick } from 'svelte'
   import type { ProjectNode } from '../../../shared/types'
   import { getDescendantIds } from '../lib/tree'
@@ -77,7 +78,8 @@
 
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Escape') onCancel()
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && e.target === searchInput) {
+      e.preventDefault()
       const destinationId = selectedId ?? filtered[0]?.id
       if (destinationId) onConfirm(destinationId)
     }
@@ -120,6 +122,7 @@
   <div
     class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 flex flex-col overflow-hidden"
     role="dialog"
+    use:modalFocus
     aria-modal="true"
     aria-label="Move node to…"
   >

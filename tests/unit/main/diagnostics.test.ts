@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { buildDiagnostics } from '../../../src/main/diagnostics'
 
 describe('buildDiagnostics', () => {
-  it('includes app, runtime, git, project, and path details', () => {
+  it('includes useful runtime details while omitting local paths', () => {
     const diagnostics = buildDiagnostics({
       appName: 'Statekeep',
       appVersion: '0.1.0',
@@ -26,8 +26,9 @@ describe('buildDiagnostics', () => {
     expect(diagnostics).toContain('App version: 0.1.0')
     expect(diagnostics).toContain('Platform: darwin arm64')
     expect(diagnostics).toContain('Git: 2.50.0 (meets minimum)')
-    expect(diagnostics).toContain('Project path: /tmp/Bench')
-    expect(diagnostics).toContain('Logs path: /tmp/logs')
+    expect(diagnostics).toContain('Project: open (path redacted)')
+    expect(diagnostics).not.toContain('/tmp/')
+    expect(diagnostics).toContain('local-only')
   })
 
   it('reports unavailable Git and no open project clearly', () => {
@@ -51,6 +52,6 @@ describe('buildDiagnostics', () => {
     })
 
     expect(diagnostics).toContain('Git: not available (minimum 2.25.0)')
-    expect(diagnostics).toContain('Project path: (none open)')
+    expect(diagnostics).toContain('Project: (none open)')
   })
 })

@@ -349,6 +349,19 @@
 
   function closeContextMenu() {
     contextMenu = null
+    containerEl?.focus({ preventScroll: true })
+  }
+
+  function handleMenuKeys(event: KeyboardEvent) {
+    const buttons = [...(contextMenuEl?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? [])]
+    const index = buttons.indexOf(document.activeElement as HTMLButtonElement)
+    let next: number | null = null
+    if (event.key === 'ArrowDown') next = (index + 1) % buttons.length
+    if (event.key === 'ArrowUp') next = (index - 1 + buttons.length) % buttons.length
+    if (event.key === 'Home') next = 0
+    if (event.key === 'End') next = buttons.length - 1
+    if (event.key === 'Escape' || event.key === 'Tab') { event.preventDefault(); closeContextMenu(); return }
+    if (next !== null) { event.preventDefault(); buttons[next]?.focus() }
   }
 
   async function measureAndClampContextMenu() {
@@ -363,6 +376,8 @@
     const clampedX = Math.min(Math.max(margin, contextMenu.x), maxX)
     const clampedY = Math.min(Math.max(margin, contextMenu.y), maxY)
     contextMenu = { ...contextMenu, x: clampedX, y: clampedY, measured: true }
+    await tick()
+    contextMenuEl?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus()
   }
 
   $effect(() => {
@@ -416,6 +431,21 @@
     }
     return -1
   }
+
+  // Flat virtualized DOM cannot infer level or sibling position. Compute these
+  // from the full row stream, including off-screen siblings.
+  const rowAria = $derived.by(() => {
+    const groups = new Map<string, VisibleRow[]>()
+    for (const row of rows) {
+      const key = `${row.depth}:${row.node.parentId ?? 'root'}`
+      const group = groups.get(key) ?? []
+      group.push(row)
+      groups.set(key, group)
+    }
+    const metadata = new Map<string, { position: number; size: number }>()
+    for (const group of groups.values()) group.forEach((row, index) => metadata.set(row.id, { position: index + 1, size: group.length }))
+    return metadata
+  })
 
   // ─── Keyboard navigation ─────────────────────────────────────────────────────
   // Nav stream is renderItems (rows + folds). Per design doc a11y contract,
@@ -530,9 +560,29 @@
       }
     }
 
+    if (inEditable) return
     const idx = currentFocusIndex()
+    if (e.key === 'ContextMenu' || (e.key === 'F10' && e.shiftKey)) {
+      const item = displayedItems[idx]?.payload
+      if (item?.kind === 'row' && item.row.kind !== 'ghost' && !editingDisabled) {
+        e.preventDefault()
+        const rect = containerEl?.querySelector<HTMLElement>(`[data-row-id="${CSS.escape(item.row.id)}"]`)?.getBoundingClientRect()
+        handleRowContextMenu(item.row, rect?.left ?? 16, rect?.bottom ?? 16)
+      }
+      return
+    }
 
     switch (e.key) {
+      case 'Home':
+      case 'End': {
+        e.preventDefault()
+        const direction = e.key === 'Home' ? 1 : -1
+        let destination = e.key === 'Home' ? 0 : displayedItems.length - 1
+        while (destination >= 0 && destination < displayedItems.length && !isNavigable(destination)) destination += direction
+        if (e.shiftKey) extendSelectionTo(destination)
+        void navigateTo(destination)
+        break
+      }
       case 'ArrowDown': {
         e.preventDefault()
         let next = idx + 1
@@ -556,6 +606,8 @@
         const item = displayedItems[idx]?.payload
         if (item?.kind === 'row' && item.row.kind !== 'ghost' && item.row.hasChildren && !item.row.expanded) {
           onToggle?.(item.row.node.id)
+        } else if (item?.kind === 'row' && item.row.kind !== 'ghost' && item.row.hasChildren && item.row.expanded) {
+          if (displayedItems[idx + 1]?.payload.kind === 'row') void navigateTo(idx + 1)
         } else if (item?.kind === 'fold' && item.section.foldId) {
           onFoldExpand?.(item.section.foldId)
         }
@@ -706,6 +758,8 @@
             {:else}
               <TreeRow
                 row={item.row}
+                position={rowAria.get(item.row.id)?.position ?? 1}
+                setSize={rowAria.get(item.row.id)?.size ?? 1}
                 compare={mode === 'compare'}
                 selected={selectedIds.has(item.row.node.id) || selectedId === item.row.node.id}
                 focused={focusedIndex === virt.index}
@@ -741,6 +795,9 @@
     style:top="{contextMenu.y}px"
     style:visibility={contextMenu.measured ? 'visible' : 'hidden'}
     role="menu"
+    tabindex="-1"
+    aria-label="Node actions"
+    onkeydown={handleMenuKeys}
   >
     <button
       class="w-full text-left px-3 py-1.5 hover:bg-stone-50 [-webkit-app-region:no-drag]"

@@ -9,8 +9,11 @@ artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 # better-sqlite3 ships prebuilt Node-API binaries that load in any Electron
 # version, so there is nothing to recompile while packaging.
 npmRebuild: false
-# Ad-hoc signs unsigned macOS builds; a no-op unless STATEKEEP_ADHOC_SIGN=1.
-afterPack: ./scripts/adhoc-sign-mac.cjs
+# Unwrap the MIT license for the Windows wizard without changing LICENSE.
+beforePack: ./scripts/installer-license.cjs
+# Harden the packaged Electron binary before signing, then ad-hoc sign unsigned
+# macOS builds when STATEKEEP_ADHOC_SIGN=1. See docs/SECURITY.md.
+afterPack: ./scripts/harden-electron.cjs
 # Notarizes and staples with retries; see the script for why it replaces
 # electron-builder's built-in notarize.
 afterSign: ./scripts/notarize-mac.cjs
@@ -69,6 +72,21 @@ win:
     - target: nsis
       arch:
         - x64
+
+# Wizard installer; same-Statekeep upgrades retain the registry install location.
+# Manifest's old app ID is a different product and requires explicit migration QA.
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  license: dist/installer-license.txt
+  include: resources/installer.nsh
+  installerSidebar: resources/installerSidebar.bmp
+  createStartMenuShortcut: true
+  createDesktopShortcut: true
+  shortcutName: Statekeep
+  deleteAppDataOnUninstall: false
 
 linux:
   icon: resources/icon.png

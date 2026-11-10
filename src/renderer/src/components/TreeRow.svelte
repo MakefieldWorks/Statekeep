@@ -6,6 +6,8 @@
   import { splitHighlight } from '../lib/tree-typeahead'
 
   interface Props {
+    position: number
+    setSize: number
     row: VisibleRow
     compare?: boolean
     selected: boolean
@@ -28,6 +30,8 @@
 
   let {
     row,
+    position,
+    setSize,
     compare = false,
     selected,
     focused,
@@ -48,6 +52,11 @@
 
   const isGhost = $derived(row.kind === 'ghost')
   const nodeId = $derived(row.node.id)
+  const accessibleName = $derived(row.kind === 'ghost'
+    ? `${row.node.name}, ${row.status === 'removed' ? 'removed' : 'previous location'}, read only`
+    : row.kind === 'decorated' && row.badges.length > 0
+      ? `${row.node.name}, ${row.badges.map(badge => badge.label).join(', ')}`
+      : row.node.name)
 
   function handleContextMenu(e: MouseEvent) {
     // Ghosts have no editable actions; suppress both the app menu (issue #3)
@@ -104,6 +113,10 @@
   <div
     role="treeitem"
     aria-selected={selected}
+    aria-level={row.depth + 1}
+    aria-posinset={position}
+    aria-setsize={setSize}
+    aria-label={accessibleName}
     tabindex="-1"
     class="flex items-center gap-1 rounded select-none italic text-sm cursor-default
            focus:outline-none focus:ring-1 focus:ring-stone-400
@@ -141,6 +154,10 @@
   <div
     role="treeitem"
     aria-selected={selected}
+    aria-level={row.depth + 1}
+    aria-posinset={position}
+    aria-setsize={setSize}
+    aria-label={accessibleName}
     aria-expanded={row.hasChildren ? row.expanded : undefined}
     tabindex="-1"
     class="flex items-center gap-1 rounded cursor-default text-sm select-none

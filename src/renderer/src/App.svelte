@@ -162,6 +162,7 @@
   let appState: AppState       = $state('welcome')
   let project:  Project | null = $state(null)
   let error:    string | null  = $state(null)
+  let selectedStarter: string = $state('')
   let newName:  string         = $state('')
   let newPath:  string         = $state('')
   let creating: boolean        = $state(false)
@@ -583,6 +584,7 @@
       showToast('Close the current project before creating a new project.')
       return
     }
+    selectedStarter = ''
     newPath = lastCreateDirectory ?? ''
     appState = 'creating'
     error = null
@@ -669,6 +671,22 @@
       case 'node:addChild':
         if (selectedNode && !selectedId?.startsWith('ghost:')) handleAddChild(selectedNode.id)
         return
+      case 'node:addSibling':
+        if (selectedNode?.parentId) handleAddChild(selectedNode.parentId)
+        return
+      case 'node:moveUp':
+        if (selectedNode) await handleMoveUp(selectedNode.id)
+        return
+      case 'node:moveDown':
+        if (selectedNode) await handleMoveDown(selectedNode.id)
+        return
+      case 'snapshot:create':
+      case 'compare:start':
+        exitCompareMode()
+        await openSnapshots()
+        await tick()
+        document.querySelector<HTMLElement>(command === 'snapshot:create' ? '[data-testid="snapshot-name-input"]' : '[data-testid="compare-from-select"]')?.focus()
+        return
       case 'node:rename':
         handleRenameRequest()
         return
@@ -753,6 +771,36 @@
     }
   }
 
+  function acceptFileDrag(event: DragEvent) {
+    if (event.dataTransfer?.types.includes('Files')) event.preventDefault()
+  }
+
+  async function handleFileDrop(event: DragEvent) {
+    event.preventDefault()
+    if (appState === 'loading' || creating || importDialogOpen || templateManagerOpen || archiveOpen || duplicateNodeId || moveToNodeId || batchDialogOpen || revertDialogSnapshotName || recoveryDialogPoint) {
+      showToast('Finish the current operation before dropping a file.')
+      return
+    }
+    const files = event.dataTransfer?.files
+    if (!files || files.length !== 1) { showToast('Drop one project, CSV, or NetBox JSON file at a time.'); return }
+    let path: string
+    try { path = window.api.files.pathForFile(files[0]!) } catch { showToast('This file could not be read. Use Open Project or Import instead.'); return }
+    if (!path) { showToast('Drop a file from your computer.'); return }
+    if (/\.(csv|json)$/i.test(path)) {
+      if (!project) { showToast('Open a project before importing a CSV or NetBox JSON file.'); return }
+      if (editingLocked) { showToast(lockReason()); return }
+      openImportDialog()
+      droppedImportPath = path
+      return
+    }
+    if (!/\.statekeep$/i.test(path)) { showToast('Unsupported file. Drop a .statekeep project, CSV, or NetBox JSON file.'); return }
+    const fallbackState = project ? 'open' : 'welcome'
+    appState = 'loading'
+    const result = await window.api.project.open(path)
+    if (result.ok) { resetOpenProjectUi(); applyOpenedProject(result.data) }
+    else { appState = fallbackState; showToast(result.error.message) }
+  }
+
   async function openExampleProject() {
     error = null
     const fallbackState = project ? 'open' : 'welcome'
@@ -796,12 +844,21 @@
     if (!newName.trim() || !newPath) return
     creating = true
     error = null
-    const result = await window.api.project.create(newName.trim(), newPath)
+    const result = selectedStarter
+      ? await window.api.project.createStarter(selectedStarter, newName.trim(), newPath)
+      : await window.api.project.create(newName.trim(), newPath)
     creating = false
     if (result.ok) {
       applyOpenedProject(result.data)
     } else {
       error = result.error.message
+      if (result.error.context?.starterProjectPath) {
+        const partial = await window.api.project.getCurrent()
+        if (partial.ok && partial.data?.path === result.error.context.starterProjectPath) {
+          applyOpenedProject(partial.data)
+          showToast(result.error.message)
+        }
+      }
     }
   }
 
@@ -1183,6 +1240,7 @@
 
   // ─── CSV import ───────────────────────────────────────────────────────────────
 
+  let droppedImportPath = $state<string | null>(null)
   let importDialogOpen = $state(false)
   let importBaseParent = $state<ProjectNode | null>(null)
   let importSummary = $state<ImportResult | null>(null)
@@ -1200,6 +1258,7 @@
     if (editingLocked) { showToast(lockReason()); return }
     const base = resolveBaseParent(node)
     if (!base) return
+    droppedImportPath = null
     importBaseParent = base
     importDialogOpen = true
   }
@@ -1626,6 +1685,7 @@
 {/if}
 
 <!-- ─── Toast ─────────────────────────────────────────────────────────────── -->
+<div role="status" aria-live="polite" aria-atomic="true">
 {#if toastMsg}
   <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-red-700 text-white
               text-sm px-4 py-2 rounded-lg shadow-lg max-w-sm text-center"
@@ -1633,6 +1693,7 @@
     {toastMsg}
   </div>
 {/if}
+</div>
 
 
 <!-- ─── Move-to dialog ────────────────────────────────────────────────────── -->
@@ -1669,9 +1730,12 @@
   />
 {/if}
 
+<svelte:window ondragover={acceptFileDrag} ondrop={handleFileDrop} />
+
 <!-- ─── Import dialog ─────────────────────────────────────────────────────── -->
 {#if importDialogOpen && project && importBaseParent}
   <ImportDialog
+    initialPath={droppedImportPath}
     baseParent={importBaseParent}
     templates={project.templates ?? {}}
     onImported={handleImported}
@@ -1699,6 +1763,7 @@
     {brandMark}
     {error}
     bind:name={newName}
+    bind:starterId={selectedStarter}
     path={newPath}
     {creating}
     onChooseFolder={selectFolder}

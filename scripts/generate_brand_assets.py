@@ -55,6 +55,15 @@ def generate_ico(base_png: Path, target: Path) -> None:
     image.save(target, format="ICO", sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
 
 
+def generate_installer_sidebar(base_png: Path, target: Path) -> None:
+    # NSIS welcome/finish pages require an uncompressed 24-bit 164x314 BMP.
+    width, height, mark_size = 164, 314, 104
+    sidebar = Image.new("RGB", (width, height), "#ffffff")
+    mark = Image.open(base_png).convert("RGBA").resize((mark_size, mark_size), Image.Resampling.LANCZOS)
+    sidebar.paste(mark, ((width - mark_size) // 2, 48), mark)
+    sidebar.save(target, format="BMP")
+
+
 def generate_web_assets(mark_png: Path) -> None:
     RENDERER_PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
     shutil.copy2(SOURCE_SVG, RENDERER_PUBLIC_DIR / "statekeep-mark.svg")
@@ -75,6 +84,7 @@ def main() -> int:
     render_png(ICON_SVG, base_png)
     generate_icns(base_png, icns_path)
     generate_ico(base_png, ico_path)
+    generate_installer_sidebar(base_png, RESOURCES_DIR / "installerSidebar.bmp")
     with tempfile.TemporaryDirectory(prefix="statekeep-mark-") as tmpdir:
         mark_png = Path(tmpdir) / "mark.png"
         render_png(SOURCE_SVG, mark_png)
@@ -84,6 +94,7 @@ def main() -> int:
     print(f"- {base_png.relative_to(ROOT)}")
     print(f"- {icns_path.relative_to(ROOT)}")
     print(f"- {ico_path.relative_to(ROOT)}")
+    print("- resources/installerSidebar.bmp")
     print(f"- {(RENDERER_PUBLIC_DIR / 'statekeep-mark.svg').relative_to(ROOT)}")
     print(f"- {(RENDERER_PUBLIC_DIR / 'statekeep-mark.png').relative_to(ROOT)}")
     print(f"- {(RENDERER_PUBLIC_DIR / 'favicon.png').relative_to(ROOT)}")

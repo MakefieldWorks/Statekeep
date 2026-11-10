@@ -24,6 +24,21 @@ them on before a release. Say so in the release notes. Linux becomes supported
 once a test machine can run the Linux desktop checklist in
 [PILOT_DOGFOOD.md](PILOT_DOGFOOD.md).
 
+## Installer validation
+
+Before publishing, run [INSTALLER_QA.md](INSTALLER_QA.md) on the supported
+platforms using the exact signed artifacts and commit an evidence record.
+Checklist authoring, CI, and unsigned package compilation do not complete the
+manual matrix (#55). Linux desktop evidence remains tracked separately in #58.
+
+Windows uses an assisted NSIS wizard with a Statekeep sidebar, informational
+MIT license, per-user/all-users choice, destination, and desktop-shortcut choice.
+The Start menu shortcut is always created. `beforePack` unwraps LICENSE for its
+text box; the security `afterPack` fuse hook still runs before signing. Updating
+an existing Statekeep installation should reuse its install mode/folder, but
+this must be tested on Windows. Manifest used a different app ID and is not an
+in-place upgrade; see the legacy migration/coexistence case in the checklist.
+
 ## Local builds versus release builds
 
 - `bun run package:verify` builds an **unsigned** unpacked app for the host

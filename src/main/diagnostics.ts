@@ -24,9 +24,8 @@ export function buildDiagnostics(info: DiagnosticsInfo): string {
     `Chrome: ${info.chromeVersion}`,
     `Node: ${info.nodeVersion}`,
     `Git: ${formatGitStatus(info.gitStatus)}`,
-    `Project path: ${info.projectPath ?? '(none open)'}`,
-    `Logs path: ${info.logsPath}`,
-    `User data path: ${info.userDataPath}`,
+    `Project: ${info.projectPath ? 'open (path redacted)' : '(none open)'}`,
+    'Local paths are omitted. Crash reporting is local-only; nothing is uploaded automatically.',
   ].join('\n')
 }
 

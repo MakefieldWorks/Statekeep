@@ -69,6 +69,9 @@ test('native menu dispatches enabled commands to renderer handlers', async ({ ap
   await clickMenuCommand(electronApp, 'project:search')
   await expect(appPage.getByTestId('search-input')).toBeFocused()
 
+  await expect.poll(() => menuEnabled(electronApp, 'node:addChild')).toBe(false)
+  await appPage.getByTestId('project-tree-view').focus()
+  await expect.poll(() => menuEnabled(electronApp, 'node:addChild')).toBe(true)
   await clickMenuCommand(electronApp, 'node:addChild')
   await expect(appPage.getByTestId('add-child-input')).toBeVisible()
 
