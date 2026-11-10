@@ -432,21 +432,6 @@
     return -1
   }
 
-  // Flat virtualized DOM cannot infer level or sibling position. Compute these
-  // from the full row stream, including off-screen siblings.
-  const rowAria = $derived.by(() => {
-    const groups = new Map<string, VisibleRow[]>()
-    for (const row of rows) {
-      const key = `${row.depth}:${row.node.parentId ?? 'root'}`
-      const group = groups.get(key) ?? []
-      group.push(row)
-      groups.set(key, group)
-    }
-    const metadata = new Map<string, { position: number; size: number }>()
-    for (const group of groups.values()) group.forEach((row, index) => metadata.set(row.id, { position: index + 1, size: group.length }))
-    return metadata
-  })
-
   // ─── Keyboard navigation ─────────────────────────────────────────────────────
   // Nav stream is renderItems (rows + folds). Per design doc a11y contract,
   // ArrowDown on a FoldMarker moves PAST the fold (to the next render item),
@@ -758,8 +743,8 @@
             {:else}
               <TreeRow
                 row={item.row}
-                position={rowAria.get(item.row.id)?.position ?? 1}
-                setSize={rowAria.get(item.row.id)?.size ?? 1}
+                position={item.row.siblingPosition}
+                setSize={item.row.siblingCount}
                 compare={mode === 'compare'}
                 selected={selectedIds.has(item.row.node.id) || selectedId === item.row.node.id}
                 focused={focusedIndex === virt.index}

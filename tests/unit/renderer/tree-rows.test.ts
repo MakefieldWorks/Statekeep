@@ -226,6 +226,35 @@ describe('flattenTree (normal mode)', () => {
     expect(rows[1].childCount).toBe(1)
     expect(rows[2].hasChildren).toBe(false)
   })
+
+  it('reports real sibling positions for ARIA when search hides siblings', () => {
+    const nodes = [
+      node('root', null, 0),
+      node('a', 'root', 0, 'A'),
+      node('b', 'root', 1, 'B'),
+      node('c', 'root', 2, 'C'),
+    ]
+    const tree = makeTree(nodes)
+    const rows = flattenTree(tree, new Set(), { includeIds: new Set(['root', 'c']) })
+
+    expect(rows.map(r => r.id)).toEqual(['root', 'c'])
+    expect(rows[0]).toMatchObject({ siblingPosition: 1, siblingCount: 1 })
+    expect(rows[1]).toMatchObject({ siblingPosition: 3, siblingCount: 3 })
+  })
+
+  it('reports sibling positions in unfiltered browse mode', () => {
+    const nodes = [
+      node('root', null, 0),
+      node('a', 'root', 0, 'A'),
+      node('b', 'root', 1, 'B'),
+    ]
+    const rows = flattenTree(makeTree(nodes), new Set(['root']))
+    expect(rows.map(r => [r.id, r.siblingPosition, r.siblingCount])).toEqual([
+      ['root', 1, 1],
+      ['a', 1, 2],
+      ['b', 2, 2],
+    ])
+  })
 })
 
 // ─── flattenTree — compare mode ───────────────────────────────────────────────

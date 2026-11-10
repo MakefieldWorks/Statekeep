@@ -982,6 +982,10 @@
       showToast(lockReason())
       return
     }
+    // The inline add form only renders under the tree, so Add Child / Add
+    // Sibling issued from Table view (native menu or shortcut) switches back
+    // to Tree view where the form and the new node's parent are visible.
+    inventoryViewMode = 'tree'
     addingChildTo = parentId
     addingChildName = ''
     addingChildError = null

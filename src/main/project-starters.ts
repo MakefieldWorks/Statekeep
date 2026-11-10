@@ -3,7 +3,7 @@ import { isAbsolute, join } from 'path'
 import { err, ErrorCode, ok } from '../shared/errors'
 import { PROJECT_STARTERS, type ProjectStarterId } from '../shared/project-starters'
 import type { NodeTemplate, Project, Result } from '../shared/types'
-import { validateNodeName } from '../shared/validation'
+import { validateProjectDirectoryName } from '../shared/validation'
 import type { ProjectManager } from './project-manager'
 
 type Values = Record<string, string | number | boolean | null>
@@ -53,7 +53,7 @@ async function createStarterProjectUnchecked(manager: ProjectManager, request: u
   if (!request || typeof request !== 'object') return err(ErrorCode.VALIDATION_FAILED, 'Choose a starter, name, and location.')
   const { starterId, name, parentPath } = request as Record<string, unknown>
   const metadata = PROJECT_STARTERS.find(starter => starter.id === starterId)
-  if (!metadata || typeof name !== 'string' || !validateNodeName(name).valid || name !== name.trim() || /[<>:"|?*\x00-\x1f]/.test(name) || /[. ]$/.test(name) || /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(name) || typeof parentPath !== 'string' || !isAbsolute(parentPath)) {
+  if (!metadata || typeof name !== 'string' || !validateProjectDirectoryName(name).valid || typeof parentPath !== 'string' || !isAbsolute(parentPath)) {
     return err(ErrorCode.VALIDATION_FAILED, 'Choose a valid starter, project name, and absolute destination folder.')
   }
   if (manager.getCurrent()) return err(ErrorCode.VALIDATION_FAILED, 'Close the current project before creating a starter.')
