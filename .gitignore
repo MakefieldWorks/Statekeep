@@ -19,3 +19,6 @@ tmp/
 
 # Impeccable records local tool consent separately from the shared design system.
 .impeccable/config.local.json
+
+# Playwright MCP browser-tool scratch output
+.playwright-mcp/
