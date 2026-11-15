@@ -4,7 +4,7 @@
 appId: com.makefieldworks.statekeep
 productName: Statekeep
 # One naming scheme for every release asset, with no spaces, so release pages
-# and SHA256SUMS list e.g. Statekeep-0.1.0-alpha.2-mac-arm64.dmg.
+# and SHA256SUMS list e.g. Statekeep-0.1.0-alpha.3-mac-arm64.dmg.
 artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 # better-sqlite3 ships prebuilt Node-API binaries that load in any Electron
 # version, so there is nothing to recompile while packaging.
