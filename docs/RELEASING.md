@@ -123,7 +123,7 @@ not signed. Without it, Windows builds stay unsigned and are not enforced.
 ## Cutting a release
 
 1. Set `version` in `package.json` to the release version (for example
-   `0.1.0-alpha.2`) in a PR, and merge it. The workflow fails if the tag and
+   `0.1.0-alpha.3`) in a PR, and merge it. The workflow fails if the tag and
    `package.json` disagree.
    If the website docs changed since the last refresh, update the offline Help
    bundle first (`bun run help:update`; see [OFFLINE_HELP.md](OFFLINE_HELP.md)).
@@ -139,8 +139,8 @@ not signed. Without it, Windows builds stay unsigned and are not enforced.
 
    ```bash
    git checkout main && git pull
-   git tag -a v0.1.0-alpha.2 -m "Statekeep 0.1.0-alpha.2"
-   git push origin v0.1.0-alpha.2
+   git tag -a v0.1.0-alpha.3 -m "Statekeep 0.1.0-alpha.3"
+   git push origin v0.1.0-alpha.3
    ```
 
 4. The workflow creates a **draft** release with generated notes. Tags with a
