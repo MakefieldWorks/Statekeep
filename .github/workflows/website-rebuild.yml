@@ -1,0 +1,31 @@
+name: Website rebuild
+
+# The website (statekeep.app) reads GitHub releases when it builds, so a newly
+# published release only appears there after the next Netlify build. This
+# calls the site's Netlify build hook when a release is published (drafts don't
+# count), and can be run by hand. Linux only, and it does nothing but one HTTP
+# POST. See docs/RELEASING.md.
+
+"on":
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  rebuild:
+    name: Trigger Netlify build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
+    steps:
+      - name: Call the build hook
+        run: |
+          if [ -z "$NETLIFY_BUILD_HOOK_URL" ]; then
+            echo "::warning::NETLIFY_BUILD_HOOK_URL is not set; trigger a Netlify deploy by hand."
+            exit 0
+          fi
+          curl --fail --silent --show-error --retry 3 -X POST -d '{}' \
+            "$NETLIFY_BUILD_HOOK_URL?trigger_title=Release+${GITHUB_REF_NAME}"

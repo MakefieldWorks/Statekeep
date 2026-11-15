@@ -120,6 +120,16 @@ expire, so note the expiry date and rotate the secret before it lapses.
 Once `AZURE_SIGNING_ENDPOINT` is set, a tag push fails if the Windows build is
 not signed. Without it, Windows builds stay unsigned and are not enforced.
 
+## Website rebuild hook
+
+The website lists releases from the GitHub API at build time, so it needs a
+new Netlify build after each release is published. In Netlify, open the
+`statekeep-website` project, go to **Project configuration → Build & deploy →
+Build hooks**, add a hook for the `main` branch, and save its URL as the
+repository secret `NETLIFY_BUILD_HOOK_URL`. The URL lets anyone start a build,
+so keep it a secret. `.github/workflows/website-rebuild.yml` calls it when a
+release is published.
+
 ## Cutting a release
 
 1. Set `version` in `package.json` to the release version (for example
@@ -153,6 +163,12 @@ not signed. Without it, Windows builds stay unsigned and are not enforced.
    (see [Platform support](#platform-support)); when a Linux test machine is
    available, install the `.deb` on Ubuntu and the `.rpm` on Fedora and follow
    the Linux desktop checklist in [PILOT_DOGFOOD.md](PILOT_DOGFOOD.md).
+
+6. Publishing the release starts the **Website rebuild** workflow, which calls
+   the Netlify build hook so <https://statekeep.app> picks up the new release
+   (the site reads releases only when it builds). If the hook secret isn't
+   set, the run warns and you trigger a deploy in Netlify by hand. You can also
+   start the workflow by hand from **Actions → Website rebuild**.
 
 A published release is public and cannot be fully recalled once people have
 downloaded it. If an asset is wrong, delete the draft and the tag, fix, and tag
